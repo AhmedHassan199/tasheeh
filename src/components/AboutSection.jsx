@@ -1,38 +1,22 @@
 import { motion } from 'framer-motion';
-import { Compass, BookOpenText, Award } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Compass, BookOpenText, Award, Repeat } from 'lucide-react';
 import { Ornament } from './Ornament.jsx';
+import { RichText } from './RichText.jsx';
 
-const pillars = [
-  {
-    icon: Compass,
-    title: 'رؤية تتجاوز الحرف',
-    body: 'ننقل للطالب خلاصة سنوات من الخبرة الاحترافية: من الجلسة الصحيحة ومسكة القلم، مرورًا بالتعامل مع الأوراق والأحبار، وصولًا إلى بناء الذاكرة البصرية وإتقان النقد الذاتي.',
-  },
-  {
-    icon: BookOpenText,
-    title: 'تعلّمٌ بلا حواجز',
-    body: 'سخّرنا التعلم عن بُعد لكسر كافة الحواجز الجغرافية. هدفنا أن نوفّر على الطالب عناء البحث والسفر، وأن نُوجّه كلّ دقيقةٍ من وقته نحو التمرّن الفعلي.',
-  },
-  {
-    icon: Award,
-    title: 'الإتقان من أهله',
-    body: 'يقتصر التدريس في «تصحيح» على نخبةٍ مختارةٍ من الأساتذة المتقنين، المشهود لهم بالكفاءة والحاصلين على جوائز عالمية، لضمان أعلى معايير الجودة.',
-  },
+const PILLARS = [
+  { id: 'vision',    icon: Compass     },
+  { id: 'boundless', icon: BookOpenText },
+  { id: 'mastery',   icon: Award       },
 ];
 
-const methodology = [
-  { num: '٠١', label: 'دراسة الحروف المُفردات' },
-  { num: '٠٢', label: 'سلّم الاتصالات' },
-  { num: '٠٣', label: 'نظام السطر' },
-  { num: '٠٤', label: 'كتابة النصوص الطويلة' },
-];
+const STEPS = ['1', '2', '3', '4'];
 
 export function AboutSection() {
+  const { t } = useTranslation();
+
   return (
-    <section
-      id="about"
-      className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture"
-    >
+    <section id="about" className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture">
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -42,30 +26,25 @@ export function AboutSection() {
           className="grid gap-10 lg:grid-cols-12 lg:items-end"
         >
           <div className="lg:col-span-7">
-            <span className="eyebrow">من نحن</span>
-            <h2 className="section-title mt-6">
-              صرحٌ تعليميٌّ <span className="text-flame-gradient">متخصص</span>،
-              <br />
-              لفنون الخط العربي.
+            <span className="eyebrow">{t('about.eyebrow')}</span>
+            <h2 className="section-title mt-6 text-balance">
+              <RichText text={t('about.title')} />
             </h2>
           </div>
           <div className="lg:col-span-5">
             <p className="text-lg leading-relaxed text-ink-700/85 dark:text-ink-200/85">
-              انطلقت أكاديمية «تصحيح» عام ٢٠٢٢ لتكون صرحًا متخصصًا يهدف إلى إرساء المنهجية
-              الصحيحة والأصيلة لفنون الخط العربي. نحن لا نُقدّم مجرّد دورات عابرة، بل نتبنّى
-              <span className="underline-ink"> منهجيةً أكاديميةً طويلة الأمد </span>
-              غايتها صناعة خطّاطٍ متقنٍ ومؤهَّل.
+              {t('about.lead')}
             </p>
           </div>
         </motion.div>
 
-        {/* Pillars grid */}
-        <div className="mt-20 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {pillars.map((p, i) => {
+        {/* Pillars */}
+        <div className="mt-20 grid gap-6 md:grid-cols-3">
+          {PILLARS.map((p, i) => {
             const Icon = p.icon;
             return (
               <motion.article
-                key={p.title}
+                key={p.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
@@ -81,10 +60,10 @@ export function AboutSection() {
                   </span>
                 </div>
                 <h3 className="mt-6 text-2xl font-extrabold text-ink-800 dark:text-ink-100">
-                  {p.title}
+                  {t(`about.pillars.${p.id}.title`)}
                 </h3>
                 <p className="mt-3 leading-relaxed text-ink-700/80 dark:text-ink-200/80">
-                  {p.body}
+                  {t(`about.pillars.${p.id}.body`)}
                 </p>
                 <Ornament className="mt-6 h-3 w-32 text-flame-500/70" />
               </motion.article>
@@ -92,7 +71,7 @@ export function AboutSection() {
           })}
         </div>
 
-        {/* Methodology timeline */}
+        {/* Methodology with the loud "repetition" highlight */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -102,21 +81,19 @@ export function AboutSection() {
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span className="eyebrow">منهجية التعلّم</span>
+              <span className="eyebrow">{t('about.methodology.eyebrow')}</span>
               <h3 className="section-title mt-4 !text-3xl sm:!text-4xl">
-                التعلّم التدريجي بنظام <span className="text-flame-gradient">المَشْق</span>
+                <RichText text={t('about.methodology.title')} />
               </h3>
             </div>
-            <p className="max-w-md text-ink-700/80 dark:text-ink-200/80">
-              منهجيتنا تعتمد على التكرار والإعادة. الانتقال للدرس التالي مرتبطٌ بمدى استيعاب
-              الطالب، لا بعدد محدّد من الإعادات.
-            </p>
           </div>
 
-          <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {methodology.map((m, i) => (
+          <RepetitionHighlight />
+
+          <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((n, i) => (
               <motion.li
-                key={m.num}
+                key={n}
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -125,16 +102,14 @@ export function AboutSection() {
               >
                 <div className="flex items-baseline justify-between">
                   <span className="text-2xl font-extrabold text-flame-600 dark:text-flame-400">
-                    {m.num}
+                    0{n}
                   </span>
-                  {i < methodology.length - 1 && (
-                    <span aria-hidden className="hidden lg:block text-flame-500/50">
-                      ←
-                    </span>
+                  {i < STEPS.length - 1 && (
+                    <span aria-hidden className="hidden lg:block text-flame-500/50">←</span>
                   )}
                 </div>
                 <p className="mt-3 text-lg font-bold text-ink-800 dark:text-ink-100">
-                  {m.label}
+                  {t(`about.methodology.steps.${n}`)}
                 </p>
               </motion.li>
             ))}
@@ -142,5 +117,80 @@ export function AboutSection() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+// Big animated callout for the line "منهجيتنا تعتمد على الإعادة والتكرار".
+// Strong attention-grabber: scaling-in headline, looping pulse on the icon,
+// and a three-row "ghost" stack that fades in to literally show repetition.
+function RepetitionHighlight() {
+  const { t } = useTranslation();
+  const headline = t('about.methodology.highlight');
+  const sub = t('about.methodology.highlightSub');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.8 }}
+      className="relative mt-12 overflow-hidden rounded-3xl border-2 border-flame-500/40 bg-flame-500/5 dark:bg-flame-500/10 p-8 sm:p-12"
+    >
+      {/* Background pulse */}
+      <motion.span
+        aria-hidden
+        className="absolute -top-24 -end-24 h-64 w-64 rounded-full bg-flame-500/30 blur-3xl"
+        animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0.9, 0.6] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      <div className="relative flex items-start gap-5">
+        <motion.span
+          className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-flame-500 text-white shadow-flame"
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+        >
+          <Repeat size={26} />
+        </motion.span>
+
+        <div className="relative flex-1">
+          {/* Echo stack — three offset copies underneath fading in to visualise repetition */}
+          {[0.18, 0.10, 0.05].map((opacity, i) => (
+            <motion.p
+              key={i}
+              aria-hidden
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 + i * 0.18, duration: 0.6 }}
+              className="absolute inset-0 text-2xl sm:text-4xl font-black text-flame-600 dark:text-flame-400 select-none"
+              style={{ transform: `translate(${(i + 1) * 6}px, ${(i + 1) * 6}px)` }}
+            >
+              {headline}
+            </motion.p>
+          ))}
+
+          <motion.p
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.5 }}
+            className="relative text-2xl sm:text-4xl font-black text-flame-600 dark:text-flame-400 leading-tight"
+          >
+            {headline}
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 1.0 }}
+            className="relative mt-6 text-base sm:text-lg leading-relaxed text-ink-700 dark:text-ink-200"
+          >
+            {sub}
+          </motion.p>
+        </div>
+      </div>
+    </motion.div>
   );
 }

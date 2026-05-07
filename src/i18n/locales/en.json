@@ -1,0 +1,249 @@
+{
+  "nav": {
+    "home": "Home",
+    "teachers": "Teachers",
+    "about": "About",
+    "mechanism": "Study Tracks",
+    "students": "Student Progress",
+    "reviews": "Testimonials",
+    "register": "Register",
+    "joinNow": "Join Now",
+    "menu": "Menu"
+  },
+  "common": {
+    "academyName": "Tasheeh Academy",
+    "close": "Close",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit registration",
+    "submitting": "Submitting...",
+    "country": "Country",
+    "yearsOld": "yrs",
+    "studentGuide": "Student Guide (PDF)",
+    "downloadGuide": "Download Student Guide"
+  },
+  "hero": {
+    "eyebrow": "Arabic Calligraphy Academy",
+    "title": "Tasheeh Academy",
+    "slogan": "We refine the idea, refine the vision — before refining a single letter.",
+    "ctaPrimary": "Begin your journey",
+    "ctaSecondary": "Meet the teachers",
+    "stats": {
+      "founded": { "value": "2022", "label": "Founded" },
+      "instructors": { "value": "+4", "label": "Master instructors" },
+      "countries": { "value": "+20", "label": "Countries" }
+    },
+    "scrollCue": "Scroll to discover"
+  },
+  "teachers": {
+    "eyebrow": "Instructors",
+    "title": "A handpicked elite of <accent>master calligraphers</accent>",
+    "subtitle": "Tap any card to discover the teacher and their works.",
+    "studentOf": "Trained under",
+    "awards": "Awards & Ijazat",
+    "works": "Selected works",
+    "registerWith": "Register with this teacher",
+    "ctaPrompt": "Ready to start with",
+    "scriptsTaught": "Scripts taught"
+  },
+  "about": {
+    "eyebrow": "About",
+    "title": "A specialised <accent>institution</accent><br/>for the Arabic letterform.",
+    "lead": "Tasheeh launched in 2022 to establish the authentic methodology of Arabic calligraphy and pass it on, anywhere.",
+    "pillars": {
+      "vision": {
+        "title": "Beyond the letter",
+        "body": "Posture, grip, visual memory, self-critique — the disciplines that make a calligrapher."
+      },
+      "boundless": {
+        "title": "Borderless learning",
+        "body": "Online, with direct supervision. Less travel, more practice."
+      },
+      "mastery": {
+        "title": "From masters only",
+        "body": "Internationally awarded teachers, certified ijazat, no compromises on craft."
+      }
+    },
+    "methodology": {
+      "eyebrow": "Methodology",
+      "title": "Step-by-step learning, the <accent>Mashq</accent> way",
+      "highlight": "Our method is built on repetition.",
+      "highlightSub": "Progress to the next lesson is by mastery, not by repetition count.",
+      "steps": {
+        "1": "Single letters",
+        "2": "Letter joins",
+        "3": "Line composition",
+        "4": "Long-form text"
+      }
+    }
+  },
+  "mechanism": {
+    "eyebrow": "Study Tracks",
+    "title": "Pick <accent>your way</accent> to learn",
+    "subtitle": "Four tracks covering every level — from first stroke to mastery.",
+    "openDetails": "View details",
+    "services": {
+      "recorded": {
+        "title": "Recorded Correction",
+        "tag": "Core programme",
+        "summary": "The traditional Mashq system, long-term, with your dedicated master.",
+        "details": [
+          "Four lessons per month — one per week.",
+          "Submit your lesson by email as a scan or photo.",
+          "Get your correction back as video + image on your private Drive.",
+          "Earn ijazah upon mastering your teacher's standard."
+        ]
+      },
+      "live": {
+        "title": "Live Online Correction",
+        "tag": "Private Zoom",
+        "summary": "One-on-one Zoom sessions with your teacher, long-term.",
+        "details": [
+          "Weekly live Zoom session at a fixed slot.",
+          "Direct interaction and live correction.",
+          "Best for those needing immediate feedback on grip & posture.",
+          "Session length per teacher's plan."
+        ]
+      },
+      "intensive": {
+        "title": "Short Intensive Course",
+        "tag": "Live + recorded",
+        "summary": "Time-bound courses combining live teaching and video corrections.",
+        "details": [
+          "Focused topics in a short window.",
+          "Live explanation + assignments + video correction.",
+          "Fastest path before joining the long-term core programme.",
+          "Runs in batches with fixed dates."
+        ]
+      },
+      "foundation": {
+        "title": "Beginners' Foundation",
+        "tag": "Branch of intensive",
+        "summary": "First steps: posture, grip, tools, the alphabet of scripts.",
+        "details": [
+          "For students who never studied with a master before.",
+          "Tools: pens, papers, inks.",
+          "Correct grip and seated posture.",
+          "Begin writing the right way."
+        ]
+      }
+    }
+  },
+  "beforeAfter": {
+    "eyebrow": "Student Progress",
+    "title": "Before correction <accent>and after</accent>",
+    "subtitle": "Real results from disciplined practice and weekly assignments.",
+    "before": "Before",
+    "after": "After",
+    "stories": "Student stories"
+  },
+  "reviews": {
+    "eyebrow": "Testimonials",
+    "title": "<accent>Their words</accent> say it all",
+    "subtitle": "Messages from our students worldwide — honest reflections after a serious journey.",
+    "openMessage": "Open message"
+  },
+  "register": {
+    "eyebrow": "Register",
+    "title": "Begin your journey with the <accent>letter</accent>",
+    "subtitle": "An interactive map that guides you, step by step, to the right plan.",
+    "perks": {
+      "lessons": "4–8 private lessons / month",
+      "delivery": "Video + image corrections on your Drive",
+      "plans": "Flexible plans: monthly · quarterly · yearly",
+      "method": "Gradual progression from letter to text"
+    },
+    "step": "Step",
+    "of": "of",
+    "steps": {
+      "goal": "Your goal",
+      "mode": "Correction mode",
+      "track": "Pick a track",
+      "scripts": "Pick scripts",
+      "teacher": "Choose teacher",
+      "info": "Your details",
+      "review": "Review"
+    },
+    "goals": {
+      "longTerm": {
+        "title": "Long-term programme",
+        "desc": "Become a master calligrapher — traditional Mashq path."
+      },
+      "short": {
+        "title": "Short intensive course",
+        "desc": "Learn a focused topic in a short window."
+      }
+    },
+    "modes": {
+      "recorded": {
+        "title": "Recorded correction",
+        "desc": "Send your lesson, get back video + image corrections."
+      },
+      "live": {
+        "title": "Live Zoom correction",
+        "desc": "Weekly live one-on-one with your teacher."
+      }
+    },
+    "tracks": {
+      "intensive": {
+        "title": "Intensive course",
+        "desc": "Time-bound module on a focused topic."
+      },
+      "foundation": {
+        "title": "Beginners' Foundation",
+        "desc": "First steps: tools, posture, alphabet."
+      }
+    },
+    "scriptsHint": "Pick one or two compatible scripts. Max 2 scripts (8 lessons/month).",
+    "lessonsCount": "{{count}} lessons / month",
+    "selected": "Selected",
+    "ruleErrors": {
+      "max-two-scripts": "Maximum two scripts only.",
+      "jali-must-be-solo": "Thuluth Jali must be studied alone.",
+      "jali-locked": "Cannot add another script to Thuluth Jali.",
+      "invalid-combination": "Combo not allowed. Allowed: Naskh+Thuluth or Diwani+Ruqaa (soon).",
+      "ruqaa-soon": "Ruqaa is launching soon — pick another script for now."
+    },
+    "fields": {
+      "name": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "country": "Country",
+      "age": "Age",
+      "preferredTeacher": "Preferred teacher",
+      "teacherAuto": "We'll match you with a teacher"
+    },
+    "errors": {
+      "name": "Name must be at least 3 characters",
+      "email": "Invalid email",
+      "phone": "Invalid phone number",
+      "country": "Pick your country",
+      "age": "Age must be 7–99",
+      "scriptsRequired": "Pick at least one script",
+      "submitFailed": "Could not submit — please try again."
+    },
+    "summary": {
+      "goal": "Goal",
+      "mode": "Correction mode",
+      "track": "Track",
+      "scripts": "Scripts",
+      "teacher": "Teacher"
+    },
+    "successTitle": "Your application is in",
+    "successBody": "Welcome {{name}} — we'll reach out within 24 hours at {{email}} to schedule your first lesson.",
+    "anotherSubmission": "Submit another application",
+    "agreement": "By submitting, you agree to Tasheeh Academy's privacy policy."
+  },
+  "footer": {
+    "tagline": "A specialised institution for the Arabic letter. Since 2022, we transmit the authentic methodology — anywhere.",
+    "contact": "Direct contact",
+    "rights": "© {{year}} Tasheeh Academy. All rights reserved."
+  },
+  "scripts": {
+    "naskh": "Naskh",
+    "thuluth": "Thuluth",
+    "diwani": "Diwani",
+    "jali": "Thuluth Jali",
+    "ruqaa": "Ruqaa"
+  }
+}

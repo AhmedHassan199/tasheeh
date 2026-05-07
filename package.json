@@ -10,10 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "framer-motion": "^11.3.19",
+    "i18next": "^26.0.10",
+    "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^0.439.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.75.0",
+    "react-i18next": "^17.0.7",
+    "yet-another-react-lightbox": "^3.32.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
