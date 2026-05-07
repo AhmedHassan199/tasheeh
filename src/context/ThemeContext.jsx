@@ -6,8 +6,8 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     if (typeof window === 'undefined') return 'light';
     const saved = localStorage.getItem('tasheeh-theme');
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // Brand default: light. Only honour prior user choice; ignore OS preference.
+    return saved === 'dark' ? 'dark' : 'light';
   });
 
   useEffect(() => {

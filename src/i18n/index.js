@@ -16,7 +16,9 @@ i18n
     supportedLngs: ['ar', 'en'],
     interpolation: { escapeValue: false },
     detection: {
-      order: ['localStorage', 'navigator'],
+      // Brand default: Arabic. Only honour the user's prior choice; do
+      // not auto-switch to English based on browser language.
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'tasheeh-lang',
     },
