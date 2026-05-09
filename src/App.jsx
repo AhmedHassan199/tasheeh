@@ -4,6 +4,7 @@ import { HeroSection } from './components/HeroSection.jsx';
 import { InstructorsSection } from './components/InstructorsSection.jsx';
 import { AboutSection } from './components/AboutSection.jsx';
 import { StudyMechanism } from './components/StudyMechanism.jsx';
+import { ExceptionalFeatures } from './components/ExceptionalFeatures.jsx';
 import { BeforeAfterSection } from './components/BeforeAfter.jsx';
 import { StudentReviews } from './components/StudentReviews.jsx';
 import { RegistrationForm } from './components/RegistrationForm.jsx';
@@ -35,6 +36,7 @@ export default function App() {
         <InstructorsSection onRegisterWithTeacher={handleRegisterWithTeacher} />
         <AboutSection />
         <StudyMechanism onPickService={handlePickService} />
+        <ExceptionalFeatures />
         <BeforeAfterSection />
         <StudentReviews />
         <RegistrationForm ref={formRef} />

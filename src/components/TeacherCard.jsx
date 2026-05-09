@@ -4,6 +4,8 @@ import { ArrowUpLeft } from 'lucide-react';
 
 export function TeacherCard({ teacher, index, onOpen }) {
   const { t } = useTranslation();
+  const name = t(`teachers.list.${teacher.id}.name`);
+
   return (
     <motion.button
       type="button"
@@ -18,7 +20,7 @@ export function TeacherCard({ teacher, index, onOpen }) {
       <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={teacher.image}
-          alt={teacher.name}
+          alt={name}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
@@ -45,7 +47,7 @@ export function TeacherCard({ teacher, index, onOpen }) {
 
       <div className="p-5">
         <h3 className="text-2xl font-extrabold leading-tight text-ink-900 dark:text-ink-100">
-          {teacher.name}
+          {name}
         </h3>
       </div>
 

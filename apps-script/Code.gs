@@ -30,16 +30,11 @@ const SCRIPT_LABELS = {
   ruqaa:   'الرقعة',
 };
 
-const GOAL_LABELS = {
-  longTerm: 'دراسة منهجية طويلة الأمد',
-  short:    'كورس مكثف قصير',
-};
-
-const MODE_LABELS = {
-  recorded:   'تصحيح مسجَّل',
-  live:       'تصحيح مباشر — Zoom',
-  intensive:  'كورس مكثف قصير',
-  foundation: 'تأسيس مبتدئين',
+const TRACK_LABELS = {
+  recorded:   'التصحيح التقليدي (مسجَّل)',
+  live:       'التصحيح المباشر (Zoom)',
+  intensive:  'دورات مكثفة جماعية',
+  foundation: 'تأسيس المبتدئين',
 };
 
 function doPost(e) {
@@ -48,35 +43,29 @@ function doPost(e) {
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-    }
+    if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
 
-    // Headers on first run
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
         'Timestamp', 'Lang',
-        'Goal', 'Mode/Track',
-        'Scripts', 'Teacher',
+        'Track', 'Scripts', 'Teacher',
         'Name', 'Email', 'Phone',
         'Country', 'Age',
       ]);
-      sheet.getRange(1, 1, 1, 11).setFontWeight('bold');
+      sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
     }
 
     const scriptsLabel = (payload.scripts || []).map((id) => SCRIPT_LABELS[id] || id).join(' + ');
-    const goalLabel = GOAL_LABELS[payload.goal] || payload.goal || '';
-    const modeLabel = MODE_LABELS[payload.mode] || payload.mode || '';
+    const trackLabel = TRACK_LABELS[payload.track] || payload.track || '';
 
     sheet.appendRow([
       new Date(), payload.lang || '',
-      goalLabel, modeLabel,
-      scriptsLabel, payload.teacher || '',
+      trackLabel, scriptsLabel, payload.teacher || '',
       payload.name || '', payload.email || '', payload.phone || '',
       payload.country || '', payload.age || '',
     ]);
 
-    sendNotificationEmail({ payload, scriptsLabel, goalLabel, modeLabel });
+    sendNotificationEmail({ payload, scriptsLabel, trackLabel });
 
     return ContentService
       .createTextOutput(JSON.stringify({ ok: true }))
@@ -89,13 +78,12 @@ function doPost(e) {
 }
 
 function doGet() {
-  // health check
   return ContentService
     .createTextOutput('Tasheeh registration endpoint is live.')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
-function sendNotificationEmail({ payload, scriptsLabel, goalLabel, modeLabel }) {
+function sendNotificationEmail({ payload, scriptsLabel, trackLabel }) {
   const subject = `📝 تسجيل جديد: ${payload.name || '—'}`;
 
   const html = `
@@ -104,20 +92,15 @@ function sendNotificationEmail({ payload, scriptsLabel, goalLabel, modeLabel }) 
         <h2 style="margin:0;font-size:20px">تسجيل جديد — أكاديمية تصحيح</h2>
       </div>
       <div style="background:#F5EDE0;padding:22px 24px;border-radius:0 0 14px 14px">
-        ${row('الاسم',       payload.name)}
-        ${row('البريد',      payload.email, true)}
-        ${row('الهاتف',      payload.phone, true)}
-        ${row('الدولة',      payload.country)}
-        ${row('العمر',       payload.age)}
+        ${row('الاسم',  payload.name)}
+        ${row('البريد', payload.email, true)}
+        ${row('الهاتف', payload.phone, true)}
+        ${row('الدولة', payload.country)}
+        ${row('العمر',  payload.age)}
         <hr style="border:none;border-top:1px solid rgba(0,0,0,0.08);margin:14px 0"/>
-        ${row('الهدف',       goalLabel)}
-        ${row('نوع التصحيح', modeLabel)}
-        ${row('الخطوط',      scriptsLabel)}
-        ${row('الأستاذ',     payload.teacher)}
-        <hr style="border:none;border-top:1px solid rgba(0,0,0,0.08);margin:14px 0"/>
-        <p style="font-size:12px;color:#553D24;margin:0">
-          تم تسجيل الطلب تلقائيًا في الـ Sheet المرتبطة.
-        </p>
+        ${row('آلية الدراسة', trackLabel)}
+        ${row('الخطوط',       scriptsLabel)}
+        ${row('الأستاذ',      payload.teacher)}
       </div>
     </div>
   `;

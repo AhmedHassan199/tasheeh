@@ -13,6 +13,11 @@ export function TeacherModal({ teacher, onClose, onRegister }) {
   const [lbIndex, setLbIndex] = useState(-1);
   const isOpen = !!teacher;
 
+  // Localised text — pull from i18n by ID
+  const name       = teacher ? t(`teachers.list.${teacher.id}.name`)               : '';
+  const studentOf  = teacher ? t(`teachers.list.${teacher.id}.studentOf`,  { returnObjects: true }) : [];
+  const awards     = teacher ? t(`teachers.list.${teacher.id}.awards`,     { returnObjects: true }) : [];
+
   useEffect(() => {
     if (!isOpen) return undefined;
     const prev = document.body.style.overflow;
@@ -25,8 +30,10 @@ export function TeacherModal({ teacher, onClose, onRegister }) {
     };
   }, [isOpen, onClose]);
 
-  // Mobile back button closes the modal (history API)
+  // Mobile back: close lightbox first (it has its own history entry too),
+  // otherwise close the teacher modal.
   useModalHistory(isOpen && lbIndex < 0, onClose);
+  useModalHistory(lbIndex >= 0, () => setLbIndex(-1));
 
   return (
     <>
@@ -41,7 +48,7 @@ export function TeacherModal({ teacher, onClose, onRegister }) {
             onClick={onClose}
             role="dialog"
             aria-modal="true"
-            aria-label={teacher.name}
+            aria-label={name}
           >
             <div className="absolute inset-0 bg-ink-900/70 backdrop-blur-md" />
 
@@ -55,10 +62,10 @@ export function TeacherModal({ teacher, onClose, onRegister }) {
             >
               <div className="grid gap-0 md:grid-cols-12">
                 <div className="relative md:col-span-5 aspect-[4/5] md:aspect-auto md:min-h-[420px] overflow-hidden">
-                  <img src={teacher.image} alt={teacher.name} className="absolute inset-0 h-full w-full object-cover" />
+                  <img src={teacher.image} alt={name} className="absolute inset-0 h-full w-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-900/80 via-transparent to-transparent md:bg-gradient-to-l" />
                   <div className="absolute inset-x-6 bottom-6 md:hidden">
-                    <h2 className="text-3xl font-extrabold text-white">{teacher.name}</h2>
+                    <h2 className="text-3xl font-extrabold text-white">{name}</h2>
                   </div>
                 </div>
 
@@ -74,7 +81,7 @@ export function TeacherModal({ teacher, onClose, onRegister }) {
 
                   <span className="hidden md:inline-flex eyebrow">{t('teachers.scriptsTaught')}</span>
                   <h2 className="hidden md:block mt-4 text-4xl font-extrabold leading-tight text-ink-900 dark:text-ink-100">
-                    {teacher.name}
+                    {name}
                   </h2>
 
                   <div className="mt-6 flex flex-wrap gap-2">
@@ -93,8 +100,8 @@ export function TeacherModal({ teacher, onClose, onRegister }) {
               </div>
 
               <div className="grid gap-8 px-7 sm:px-10 pb-2 md:grid-cols-2">
-                <DetailBlock icon={GraduationCap} title={t('teachers.studentOf')} items={teacher.studentOf} />
-                <DetailBlock icon={Award} title={t('teachers.awards')} items={teacher.awards} />
+                <DetailBlock icon={GraduationCap} title={t('teachers.studentOf')} items={studentOf} />
+                <DetailBlock icon={Award}         title={t('teachers.awards')}    items={awards} />
               </div>
 
               <div className="px-7 sm:px-10 mt-10">
@@ -132,7 +139,7 @@ export function TeacherModal({ teacher, onClose, onRegister }) {
                 <div className="flex items-center gap-3">
                   <Sparkles className="text-flame-500" size={18} />
                   <p className="font-bold text-ink-700 dark:text-ink-200">
-                    {t('teachers.ctaPrompt')} {teacher.name}؟
+                    {t('teachers.ctaPrompt')} {name}؟
                   </p>
                 </div>
                 <button
@@ -151,7 +158,8 @@ export function TeacherModal({ teacher, onClose, onRegister }) {
         )}
       </AnimatePresence>
 
-      {/* Artwork lightbox — pinch zoom + pan */}
+      {/* Artwork lightbox — pinch zoom + pan; back button closes it first
+          (because useModalHistory above pushed a state when it opened). */}
       <Lightbox
         open={lbIndex >= 0}
         index={lbIndex < 0 ? 0 : lbIndex}

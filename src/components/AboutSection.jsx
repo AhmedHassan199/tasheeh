@@ -120,9 +120,6 @@ export function AboutSection() {
   );
 }
 
-// Big animated callout for the line "منهجيتنا تعتمد على الإعادة والتكرار".
-// Strong attention-grabber: scaling-in headline, looping pulse on the icon,
-// and a three-row "ghost" stack that fades in to literally show repetition.
 function RepetitionHighlight() {
   const { t } = useTranslation();
   const headline = t('about.methodology.highlight');
@@ -136,7 +133,6 @@ function RepetitionHighlight() {
       transition={{ duration: 0.8 }}
       className="relative mt-12 overflow-hidden rounded-3xl border-2 border-flame-500/40 bg-flame-500/5 dark:bg-flame-500/10 p-8 sm:p-12"
     >
-      {/* Background pulse */}
       <motion.span
         aria-hidden
         className="absolute -top-24 -end-24 h-64 w-64 rounded-full bg-flame-500/30 blur-3xl"
@@ -154,7 +150,6 @@ function RepetitionHighlight() {
         </motion.span>
 
         <div className="relative flex-1">
-          {/* Echo stack — three offset copies underneath fading in to visualise repetition */}
           {[0.18, 0.10, 0.05].map((opacity, i) => (
             <motion.p
               key={i}

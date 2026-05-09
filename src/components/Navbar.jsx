@@ -10,6 +10,7 @@ const linkKeys = [
   { href: '#teachers', key: 'teachers' },
   { href: '#about', key: 'about' },
   { href: '#mechanism', key: 'mechanism' },
+  { href: '#features', key: 'features' },
   { href: '#students', key: 'students' },
   { href: '#reviews', key: 'reviews' },
   { href: '#register', key: 'register' },

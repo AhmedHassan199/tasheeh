@@ -1,21 +1,26 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Mic, Video, Zap, Sprout, X, ArrowUpLeft, Sparkles } from 'lucide-react';
+import {
+  Mic, Video, Zap, Sprout, X, ArrowUpLeft, Sparkles,
+  PlayCircle, Users, Clock, ListChecks, Repeat,
+} from 'lucide-react';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
+import { ClickHint } from './ClickHint.jsx';
 import { useModalHistory } from '../hooks/useModalHistory.js';
 
 const SERVICES = [
-  { id: 'recorded',   icon: Mic,    accent: 'from-flame-500/15 to-flame-500/0' },
-  { id: 'live',       icon: Video,  accent: 'from-flame-400/15 to-flame-400/0' },
-  { id: 'intensive',  icon: Zap,    accent: 'from-flame-600/15 to-flame-600/0' },
-  { id: 'foundation', icon: Sprout, accent: 'from-flame-300/15 to-flame-300/0' },
+  { id: 'recorded',   icon: Mic,    accent: 'from-flame-500/15 to-flame-500/0', methodology: true  },
+  { id: 'live',       icon: Video,  accent: 'from-flame-400/15 to-flame-400/0', methodology: true  },
+  { id: 'intensive',  icon: Zap,    accent: 'from-flame-600/15 to-flame-600/0', methodology: false },
+  { id: 'foundation', icon: Sprout, accent: 'from-flame-300/15 to-flame-300/0', methodology: false },
 ];
 
 export function StudyMechanism({ onPickService }) {
   const { t } = useTranslation();
   const [active, setActive] = useState(null);
+  const activeService = SERVICES.find((s) => s.id === active);
 
   return (
     <section id="mechanism" className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture">
@@ -38,6 +43,7 @@ export function StudyMechanism({ onPickService }) {
             <p className="text-lg leading-relaxed text-ink-700/85 dark:text-ink-200/85">
               {t('mechanism.subtitle')}
             </p>
+            <ClickHint className="mt-4" />
           </div>
         </motion.div>
 
@@ -69,10 +75,7 @@ export function StudyMechanism({ onPickService }) {
                 <h3 className="relative mt-6 text-xl font-extrabold text-ink-900 dark:text-ink-100">
                   {t(`mechanism.services.${s.id}.title`)}
                 </h3>
-                <p className="relative mt-2 text-sm font-bold tracking-wider text-flame-600 dark:text-flame-400">
-                  {t(`mechanism.services.${s.id}.tag`)}
-                </p>
-                <p className="relative mt-4 leading-relaxed text-ink-700/85 dark:text-ink-200/85">
+                <p className="relative mt-3 leading-relaxed text-ink-700/85 dark:text-ink-200/85">
                   {t(`mechanism.services.${s.id}.summary`)}
                 </p>
 
@@ -86,17 +89,26 @@ export function StudyMechanism({ onPickService }) {
         </div>
       </div>
 
-      <ServiceModal serviceId={active} onClose={() => setActive(null)} onPick={onPickService} />
+      <ServiceModal
+        service={activeService}
+        onClose={() => setActive(null)}
+        onPick={onPickService}
+      />
     </section>
   );
 }
 
-function ServiceModal({ serviceId, onClose, onPick }) {
+function ServiceModal({ service, onClose, onPick }) {
   const { t } = useTranslation();
-  const isOpen = !!serviceId;
+  const isOpen = !!service;
   useModalHistory(isOpen, onClose);
 
-  const details = serviceId ? t(`mechanism.services.${serviceId}.details`, { returnObjects: true }) : [];
+  if (!service) return <AnimatePresence />;
+
+  const id = service.id;
+  const details = t(`mechanism.services.${id}.details`, { returnObjects: true });
+  const methodologySteps = t('about.methodology.steps', { returnObjects: true });
+  const methodologyHighlight = t('about.methodology.highlight');
 
   return (
     <AnimatePresence>
@@ -112,63 +124,142 @@ function ServiceModal({ serviceId, onClose, onPick }) {
           aria-modal="true"
         >
           <div className="absolute inset-0 bg-ink-900/70 backdrop-blur-md" />
+
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.97 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="relative z-[61] w-full max-w-2xl rounded-3xl border border-white/10 bg-paper dark:bg-[#120A05] shadow-ink p-7 sm:p-10"
+            className="relative z-[61] w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl border border-white/10 bg-paper dark:bg-[#120A05] shadow-ink"
           >
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label={t('common.close')}
-              className="absolute end-4 top-4 grid h-10 w-10 place-items-center rounded-full border border-ink-900/10 dark:border-ink-100/15 text-ink-700 dark:text-ink-200 hover:bg-flame-500 hover:text-white hover:border-transparent transition-colors"
-            >
-              <X size={18} />
-            </button>
+            {/* Header */}
+            <div className="relative p-7 sm:p-10 pb-0">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label={t('common.close')}
+                className="absolute end-4 top-4 grid h-10 w-10 place-items-center rounded-full border border-ink-900/10 dark:border-ink-100/15 text-ink-700 dark:text-ink-200 hover:bg-flame-500 hover:text-white hover:border-transparent transition-colors"
+              >
+                <X size={18} />
+              </button>
 
-            <span className="eyebrow">{t(`mechanism.services.${serviceId}.tag`)}</span>
-            <h3 className="mt-4 text-3xl sm:text-4xl font-extrabold text-ink-900 dark:text-ink-100">
-              {t(`mechanism.services.${serviceId}.title`)}
-            </h3>
-            <Ornament className="mt-5 h-3 w-44 text-flame-500/70" />
+              <span className="eyebrow">{t(`mechanism.services.${id}.tag`)}</span>
+              <h3 className="mt-4 text-3xl sm:text-4xl font-extrabold text-ink-900 dark:text-ink-100">
+                {t(`mechanism.services.${id}.title`)}
+              </h3>
+              <Ornament className="mt-5 h-3 w-44 text-flame-500/70" />
+              <p className="mt-5 leading-relaxed text-ink-700/85 dark:text-ink-200/85">
+                {t(`mechanism.services.${id}.summary`)}
+              </p>
+            </div>
 
-            <ul className="mt-7 space-y-3">
-              {details.map((d, i) => (
-                <motion.li
-                  key={d}
-                  initial={{ opacity: 0, x: 12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + i * 0.06 }}
-                  className="flex gap-3 leading-relaxed text-ink-700 dark:text-ink-200"
-                >
-                  <span aria-hidden className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-flame-500" />
-                  <span>{d}</span>
-                </motion.li>
-              ))}
-            </ul>
+            {/* Body */}
+            <div className="grid gap-5 p-7 sm:p-10 pt-7">
+              <ModalCard icon={Users} title={t('mechanism.headers.audience')}>
+                <p className="leading-relaxed text-ink-700 dark:text-ink-200">
+                  {t(`mechanism.services.${id}.audience`)}
+                </p>
+              </ModalCard>
 
-            <div className="mt-9 flex flex-wrap items-center justify-end gap-3">
+              <ModalCard icon={Clock} title={t('mechanism.headers.duration')}>
+                <p className="leading-relaxed text-ink-700 dark:text-ink-200">
+                  {t(`mechanism.services.${id}.duration`)}
+                </p>
+              </ModalCard>
+
+              <ModalCard icon={ListChecks} title={t('mechanism.headers.details')}>
+                <ul className="space-y-2">
+                  {details.map((d) => (
+                    <li key={d} className="flex gap-3 leading-relaxed text-ink-700 dark:text-ink-200">
+                      <span aria-hidden className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-flame-500" />
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              </ModalCard>
+
+              {/* Methodology — only on Recorded + Live (per brief: merge here) */}
+              {service.methodology && (
+                <ModalCard icon={Repeat} title={t('mechanism.headers.methodology')} accent>
+                  <div className="rounded-2xl bg-flame-500/10 border border-flame-500/30 p-4">
+                    <motion.p
+                      animate={{ scale: [1, 1.02, 1] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                      className="text-lg sm:text-xl font-black text-flame-700 dark:text-flame-300"
+                    >
+                      {methodologyHighlight}
+                    </motion.p>
+                  </div>
+                  <ol className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {Object.entries(methodologySteps).map(([k, label], i) => (
+                      <li
+                        key={k}
+                        className="flex items-center gap-3 rounded-xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08]/70 px-3 py-2.5"
+                      >
+                        <span className="grid h-7 w-7 place-items-center rounded-full bg-flame-500 text-white text-xs font-extrabold">
+                          0{i + 1}
+                        </span>
+                        <span className="font-bold text-ink-900 dark:text-ink-100">{label}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </ModalCard>
+              )}
+
+              {/* Video placeholder */}
+              <ModalCard icon={PlayCircle} title={t('mechanism.headers.preview')}>
+                <div className="relative aspect-video overflow-hidden rounded-2xl border border-ink-900/10 dark:border-ink-100/10 bg-gradient-to-br from-flame-500/10 to-transparent grid place-items-center">
+                  <span className="absolute inset-0 grid place-items-center">
+                    <span className="grid h-16 w-16 place-items-center rounded-full bg-flame-500 text-white shadow-flame">
+                      <PlayCircle size={32} />
+                    </span>
+                  </span>
+                  <span className="absolute bottom-3 inset-x-0 text-center text-xs font-bold text-ink-600 dark:text-ink-300">
+                    {t('common.videoSoon')}
+                  </span>
+                </div>
+              </ModalCard>
+            </div>
+
+            {/* CTA */}
+            <div className="sticky bottom-0 mt-2 border-t border-ink-900/10 dark:border-ink-100/10 bg-paper/95 dark:bg-[#120A05]/95 backdrop-blur-md px-7 sm:px-10 py-5 flex flex-wrap items-center justify-end gap-3">
               <button type="button" onClick={onClose} className="btn-ghost">
                 {t('common.close')}
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  onPick?.(serviceId);
+                  onPick?.(id);
                   onClose();
                 }}
                 className="btn-flame"
               >
                 <Sparkles size={16} />
-                {t('hero.ctaPrimary')}
+                {t('hero.ctaJoin')}
               </button>
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function ModalCard({ icon: Icon, title, accent = false, children }) {
+  return (
+    <div
+      className={`rounded-2xl border p-5 ${
+        accent
+          ? 'border-flame-500/40 bg-flame-500/5'
+          : 'border-ink-900/10 dark:border-ink-100/10 bg-paper/60 dark:bg-[#170D07]/60'
+      }`}
+    >
+      <div className="flex items-center gap-2.5">
+        <Icon className="text-flame-500" size={18} />
+        <h4 className="text-lg font-extrabold text-ink-900 dark:text-ink-100">{title}</h4>
+      </div>
+      <div className="mt-3">{children}</div>
+    </div>
   );
 }

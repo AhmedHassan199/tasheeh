@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowRight, ArrowLeft, Check, Loader2, User, Mail, Phone,
-  Globe, Cake, GraduationCap, Sparkles, Mic, Video, Zap, Sprout,
-  Target, AlertTriangle,
+  Globe, Cake, Sparkles, Mic, Video, Zap, Sprout, AlertTriangle,
 } from 'lucide-react';
 import { teachers as TEACHERS } from '../data/teachers.js';
 import { SCRIPTS, canAddScript, teachersForScripts } from '../lib/registrationRules.js';
@@ -13,24 +12,32 @@ import { RichText } from './RichText.jsx';
 
 const ENDPOINT = import.meta.env.VITE_REGISTRATION_ENDPOINT || '';
 
+// One id maps to each of the 4 study tracks the academy actually offers.
+const TRACK_IDS = ['recorded', 'live', 'intensive', 'foundation'];
+
+const TRACK_ICONS = {
+  recorded:   Mic,
+  live:       Video,
+  intensive:  Zap,
+  foundation: Sprout,
+};
+
 // Step machine — derived from current values rather than hard-coded
-// indexes, so adding/removing branches is straightforward.
+// indexes. Adding/removing a step (e.g. teacher only when a long-term
+// track is picked) is straightforward.
 function buildSteps(values) {
-  const steps = ['goal'];
-  if (values.goal === 'longTerm') {
-    steps.push('mode', 'scripts', 'teacher');
-  } else if (values.goal === 'short') {
-    steps.push('track', 'scripts');
+  const steps = ['track', 'scripts'];
+  // Teacher choice only matters for long-term programmes
+  if (values.track === 'recorded' || values.track === 'live') {
+    steps.push('teacher');
   }
   steps.push('info', 'review');
   return steps;
 }
 
 const initialValues = {
-  goal: '',         // 'longTerm' | 'short'
-  mode: '',         // 'recorded' | 'live'  (long-term only)
-  track: '',        // 'intensive' | 'foundation' (short only)
-  scripts: [],      // ['naskh' | 'thuluth' | 'diwani' | 'jali']
+  track: '',        // 'recorded' | 'live' | 'intensive' | 'foundation'
+  scripts: [],
   teacher: '',
   name: '',
   email: '',
@@ -46,33 +53,30 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | submitting | done | error
 
-  const steps = useMemo(() => buildSteps(values), [values.goal]);
+  const steps = useMemo(() => buildSteps(values), [values.track]);
   const currentStep = steps[stepIdx];
   const totalSteps = steps.length;
 
-  // Allow parent to preset a teacher (and jump to long-term flow if needed)
   useImperativeHandle(ref, () => ({
     presetTeacher(teacherId) {
-      setValues((v) => ({
-        ...v,
-        goal: 'longTerm',
-        mode: v.mode || 'recorded',
-        scripts: v.scripts.length ? v.scripts : (TEACHERS.find((tt) => tt.id === teacherId)?.scripts.slice(0, 1) ?? []),
+      const teacher = TEACHERS.find((tt) => tt.id === teacherId);
+      const next = {
+        ...values,
+        track: values.track || 'recorded',
+        scripts: values.scripts.length ? values.scripts : (teacher?.scripts.slice(0, 1) ?? []),
         teacher: teacherId,
-      }));
-      setStepIdx(buildSteps({ goal: 'longTerm' }).indexOf('info'));
-    },
-    presetService(serviceId) {
-      const map = {
-        recorded:   { goal: 'longTerm', mode: 'recorded' },
-        live:       { goal: 'longTerm', mode: 'live'     },
-        intensive:  { goal: 'short',    track: 'intensive'  },
-        foundation: { goal: 'short',    track: 'foundation' },
       };
-      const next = { ...values, ...(map[serviceId] || {}) };
       setValues(next);
       const nextSteps = buildSteps(next);
-      setStepIdx(Math.min(2, nextSteps.length - 1));
+      setStepIdx(nextSteps.indexOf('info'));
+    },
+    presetService(serviceId) {
+      // Service ids match track ids 1:1
+      if (!TRACK_IDS.includes(serviceId)) return;
+      const next = { ...values, track: serviceId };
+      setValues(next);
+      const nextSteps = buildSteps(next);
+      setStepIdx(nextSteps.indexOf('scripts'));
     },
   }));
 
@@ -102,8 +106,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
 
     setStatus('submitting');
     const payload = {
-      goal: values.goal,
-      mode: values.mode || values.track,
+      track: values.track,
       scripts: values.scripts,
       teacher: values.teacher,
       name: values.name,
@@ -117,7 +120,6 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
 
     try {
       if (ENDPOINT) {
-        // text/plain prevents the CORS preflight that Apps Script rejects.
         await fetch(ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -156,7 +158,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
             </p>
 
             <ul className="mt-8 space-y-3">
-              {['lessons', 'delivery', 'plans', 'method'].map((k) => (
+              {['diverse', 'plans', 'masters', 'community'].map((k) => (
                 <li
                   key={k}
                   className="flex items-start gap-3 rounded-2xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#150B07]/70 px-4 py-3"
@@ -209,9 +211,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
 
                     {/* Step body */}
                     <div className="mt-7 min-h-[280px]">
-                      {currentStep === 'goal'    && <StepGoal values={values} update={update} />}
-                      {currentStep === 'mode'    && <StepMode values={values} update={update} />}
-                      {currentStep === 'track'   && <StepTrack values={values} update={update} />}
+                      {currentStep === 'track'   && <StepTrack   values={values} update={update} />}
                       {currentStep === 'scripts' && (
                         <StepScripts values={values} update={update} error={errors.scripts} />
                       )}
@@ -222,7 +222,6 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
                       {currentStep === 'review'  && <StepReview values={values} />}
                     </div>
 
-                    {/* Submit error banner */}
                     {status === 'error' && (
                       <div className="mt-4 flex items-center gap-2 rounded-xl border border-flame-500/40 bg-flame-500/10 px-4 py-3 text-flame-700 dark:text-flame-300">
                         <AlertTriangle size={16} />
@@ -290,11 +289,9 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
   );
 });
 
-// ───────── helpers ─────────
+// ───── helpers ─────
 function canAdvance(step, v) {
   switch (step) {
-    case 'goal':    return !!v.goal;
-    case 'mode':    return !!v.mode;
     case 'track':   return !!v.track;
     case 'scripts': return v.scripts.length > 0;
     case 'teacher': return !!v.teacher;
@@ -318,7 +315,7 @@ function validateStep(step, v, t) {
   return e;
 }
 
-// ───────── step components ─────────
+// ───── step components ─────
 function ChoiceCard({ icon: Icon, title, desc, active, onClick }) {
   return (
     <button
@@ -343,60 +340,6 @@ function ChoiceCard({ icon: Icon, title, desc, active, onClick }) {
   );
 }
 
-function StepGoal({ values, update }) {
-  const { t } = useTranslation();
-  return (
-    <>
-      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">
-        {t('register.steps.goal')}
-      </h3>
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <ChoiceCard
-          icon={Target}
-          title={t('register.goals.longTerm.title')}
-          desc={t('register.goals.longTerm.desc')}
-          active={values.goal === 'longTerm'}
-          onClick={() => update({ goal: 'longTerm', track: '', scripts: [], teacher: '' })}
-        />
-        <ChoiceCard
-          icon={Zap}
-          title={t('register.goals.short.title')}
-          desc={t('register.goals.short.desc')}
-          active={values.goal === 'short'}
-          onClick={() => update({ goal: 'short', mode: '', teacher: '', scripts: [] })}
-        />
-      </div>
-    </>
-  );
-}
-
-function StepMode({ values, update }) {
-  const { t } = useTranslation();
-  return (
-    <>
-      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">
-        {t('register.steps.mode')}
-      </h3>
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <ChoiceCard
-          icon={Mic}
-          title={t('register.modes.recorded.title')}
-          desc={t('register.modes.recorded.desc')}
-          active={values.mode === 'recorded'}
-          onClick={() => update({ mode: 'recorded' })}
-        />
-        <ChoiceCard
-          icon={Video}
-          title={t('register.modes.live.title')}
-          desc={t('register.modes.live.desc')}
-          active={values.mode === 'live'}
-          onClick={() => update({ mode: 'live' })}
-        />
-      </div>
-    </>
-  );
-}
-
 function StepTrack({ values, update }) {
   const { t } = useTranslation();
   return (
@@ -405,20 +348,19 @@ function StepTrack({ values, update }) {
         {t('register.steps.track')}
       </h3>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <ChoiceCard
-          icon={Zap}
-          title={t('register.tracks.intensive.title')}
-          desc={t('register.tracks.intensive.desc')}
-          active={values.track === 'intensive'}
-          onClick={() => update({ track: 'intensive' })}
-        />
-        <ChoiceCard
-          icon={Sprout}
-          title={t('register.tracks.foundation.title')}
-          desc={t('register.tracks.foundation.desc')}
-          active={values.track === 'foundation'}
-          onClick={() => update({ track: 'foundation' })}
-        />
+        {TRACK_IDS.map((id) => {
+          const Icon = TRACK_ICONS[id];
+          return (
+            <ChoiceCard
+              key={id}
+              icon={Icon}
+              title={t(`register.tracks.${id}.title`)}
+              desc={t(`register.tracks.${id}.desc`)}
+              active={values.track === id}
+              onClick={() => update({ track: id, teacher: '' })}
+            />
+          );
+        })}
       </div>
     </>
   );
@@ -474,7 +416,11 @@ function StepScripts({ values, update, error }) {
             >
               <span className="text-lg font-extrabold text-ink-900 dark:text-ink-100">
                 {t(`scripts.${s.id}`)}
-                {!s.active && <span className="ms-2 text-xs font-bold text-flame-600 dark:text-flame-400">({t('register.ruleErrors.ruqaa-soon')})</span>}
+                {!s.active && (
+                  <span className="ms-2 text-xs font-bold text-flame-600 dark:text-flame-400">
+                    ({t('register.ruleErrors.ruqaa-soon')})
+                  </span>
+                )}
               </span>
               <span
                 className={`grid h-7 w-7 place-items-center rounded-full transition-colors ${
@@ -525,6 +471,7 @@ function StepTeacher({ values, update }) {
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {candidates.map((tc) => {
             const selected = values.teacher === tc.id;
+            const name = t(`teachers.list.${tc.id}.name`);
             return (
               <button
                 key={tc.id}
@@ -540,7 +487,7 @@ function StepTeacher({ values, update }) {
                   <img src={tc.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 </span>
                 <span className="flex-1">
-                  <span className="block text-base font-extrabold text-ink-900 dark:text-ink-100">{tc.name}</span>
+                  <span className="block text-base font-extrabold text-ink-900 dark:text-ink-100">{name}</span>
                   <span className="block text-xs text-ink-600 dark:text-ink-300">
                     {tc.scripts.map((s) => t(`scripts.${s}`)).join(' · ')}
                   </span>
@@ -606,13 +553,16 @@ function Field({ icon: Icon, label, type = 'text', value, onChange, error, dir, 
 
 function StepReview({ values }) {
   const { t } = useTranslation();
-  const teacherName = TEACHERS.find((tt) => tt.id === values.teacher)?.name || t('register.fields.teacherAuto');
+  const teacherName = values.teacher
+    ? t(`teachers.list.${values.teacher}.name`)
+    : t('register.fields.teacherAuto');
+
   const rows = [
-    { label: t('register.summary.goal'),    value: values.goal === 'longTerm' ? t('register.goals.longTerm.title') : t('register.goals.short.title') },
-    values.mode  && { label: t('register.summary.mode'),   value: t(`register.modes.${values.mode}.title`) },
-    values.track && { label: t('register.summary.track'),  value: t(`register.tracks.${values.track}.title`) },
+    { label: t('register.summary.track'),   value: t(`register.tracks.${values.track}.title`) },
     { label: t('register.summary.scripts'), value: values.scripts.map((s) => t(`scripts.${s}`)).join(' + ') || '—' },
-    values.goal === 'longTerm' && { label: t('register.summary.teacher'), value: teacherName },
+    (values.track === 'recorded' || values.track === 'live') && {
+      label: t('register.summary.teacher'), value: teacherName,
+    },
   ].filter(Boolean);
 
   return (
@@ -667,6 +617,3 @@ function Success({ name, email, reset }) {
     </motion.div>
   );
 }
-
-// keep GraduationCap import even if unused above (helps with code search)
-void GraduationCap;

@@ -6,6 +6,7 @@ import { TeacherCard } from './TeacherCard.jsx';
 import { TeacherModal } from './TeacherModal.jsx';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
+import { ClickHint } from './ClickHint.jsx';
 
 export function InstructorsSection({ onRegisterWithTeacher }) {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
             <p className="text-lg leading-relaxed text-ink-700/85 dark:text-ink-200/85">
               {t('teachers.subtitle')}
             </p>
+            <ClickHint className="mt-4" />
           </div>
         </motion.div>
 
