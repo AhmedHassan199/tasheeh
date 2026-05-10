@@ -4,7 +4,8 @@ import { ArrowUpLeft } from 'lucide-react';
 
 export function TeacherCard({ teacher, index, onOpen }) {
   const { t } = useTranslation();
-  const name = t(`teachers.list.${teacher.id}.name`);
+  const namePlain = t(`teachers.list.${teacher.id}.namePlain`);
+  const prefix = t('teachers.prefix');
 
   return (
     <motion.button
@@ -15,12 +16,12 @@ export function TeacherCard({ teacher, index, onOpen }) {
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.6, delay: (index % 4) * 0.08 }}
       whileHover={{ y: -6 }}
-      className="group relative w-full text-start overflow-hidden rounded-3xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/80 dark:bg-[#150B07]/70 transition-shadow duration-500 hover:shadow-ink"
+      className="group relative w-full h-full text-start overflow-hidden rounded-3xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/80 dark:bg-[#150B07]/70 transition-shadow duration-500 hover:shadow-ink"
     >
       <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={teacher.image}
-          alt={name}
+          alt={namePlain}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
@@ -39,15 +40,18 @@ export function TeacherCard({ teacher, index, onOpen }) {
 
         <span
           aria-hidden
-          className="absolute bottom-4 left-4 grid h-11 w-11 place-items-center rounded-full bg-flame-500 text-white opacity-0 -translate-x-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-0 rtl:left-auto rtl:right-4 rtl:translate-x-2 rtl:group-hover:translate-x-0"
+          className="absolute bottom-4 start-4 grid h-11 w-11 place-items-center rounded-full bg-flame-500 text-white opacity-0 -translate-x-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-0 rtl:translate-x-2 rtl:group-hover:translate-x-0"
         >
           <ArrowUpLeft size={18} />
         </span>
       </div>
 
       <div className="p-5">
-        <h3 className="text-2xl font-extrabold leading-tight text-ink-900 dark:text-ink-100">
-          {name}
+        <p className="text-xs font-semibold tracking-wider text-ink-500 dark:text-ink-300">
+          {prefix}
+        </p>
+        <h3 className="mt-1 text-2xl font-extrabold leading-tight text-ink-900 dark:text-ink-100">
+          {namePlain}
         </h3>
       </div>
 

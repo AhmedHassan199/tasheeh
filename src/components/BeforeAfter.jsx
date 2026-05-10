@@ -1,19 +1,45 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, MapPin, Clock, ZoomIn, X } from 'lucide-react';
+import { ChevronLeft, MapPin, Clock, ZoomIn, Maximize2 } from 'lucide-react';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/counter.css';
 import { studentProgress } from '../data/teachers.js';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
-import { ClickHint } from './ClickHint.jsx';
 import { useModalHistory } from '../hooks/useModalHistory.js';
+
+// Build a flat slide list — every student contributes a "before" then "after"
+// with descriptive labels so the lightbox counter reads naturally.
+function buildSlides(progress, t) {
+  const slides = [];
+  progress.forEach((s) => {
+    const name = t(`beforeAfter.list.${s.id}.name`);
+    slides.push({ src: s.before, alt: `${name} — ${t('beforeAfter.before')}`, studentId: s.id, kind: 'before' });
+    slides.push({ src: s.after,  alt: `${name} — ${t('beforeAfter.after')}`,  studentId: s.id, kind: 'after'  });
+  });
+  return slides;
+}
 
 export function BeforeAfterSection() {
   const { t } = useTranslation();
-  const [activeId, setActiveId] = useState(null);
+  const [lbIndex, setLbIndex] = useState(-1);
+  const slides = buildSlides(studentProgress, t);
+  useModalHistory(lbIndex >= 0, () => setLbIndex(-1));
+
+  // Hero preview shows the first student's "after"
+  const hero = studentProgress[0];
+  const heroName     = t(`beforeAfter.list.${hero.id}.name`);
+  const heroNote     = t(`beforeAfter.list.${hero.id}.note`);
+  const heroDuration = t(`beforeAfter.list.${hero.id}.duration`);
+
+  const openAt = (id, kind) => {
+    const i = slides.findIndex((s) => s.studentId === id && s.kind === kind);
+    setLbIndex(i < 0 ? 0 : i);
+  };
 
   return (
     <section id="students" className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture">
@@ -36,211 +62,138 @@ export function BeforeAfterSection() {
             <p className="text-lg leading-relaxed text-ink-700/80 dark:text-ink-200/80">
               {t('beforeAfter.subtitle')}
             </p>
-            <ClickHint className="mt-4" />
           </div>
         </motion.div>
 
-        {/* Names list — primary view on every screen size */}
-        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {studentProgress.map((s, i) => (
-            <StudentRow
-              key={s.id}
-              student={s}
-              index={i}
-              onOpen={() => setActiveId(s.id)}
+        <div className="mt-12 grid gap-8 lg:grid-cols-12 lg:items-start">
+          {/* Hero preview — visible single image with CTA to open the gallery */}
+          <motion.button
+            type="button"
+            onClick={() => openAt(hero.id, 'after')}
+            initial={{ opacity: 0, scale: 0.97 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.6 }}
+            className="group relative lg:col-span-8 aspect-[16/10] overflow-hidden rounded-3xl border border-flame-500/30"
+          >
+            <img
+              src={hero.after}
+              alt={heroName}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
             />
-          ))}
+            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink-900/85 via-ink-900/20 to-transparent" />
+
+            <span className="absolute top-4 start-4 rounded-full bg-flame-500 text-white px-3 py-1 text-xs font-extrabold shadow-flame">
+              {t('beforeAfter.after')}
+            </span>
+
+            <span className="absolute top-4 end-4 inline-flex items-center gap-1.5 rounded-full bg-paper/90 dark:bg-ink-900/80 backdrop-blur-md px-3 py-1.5 text-xs font-extrabold text-ink-900 dark:text-ink-100">
+              <Maximize2 size={13} />
+              {t('beforeAfter.openGallery')}
+            </span>
+
+            <div className="absolute inset-x-5 bottom-5 text-start">
+              <p className="text-2xl sm:text-3xl font-extrabold text-white">{heroName}</p>
+              <p className="mt-1 text-sm text-white/85">{heroNote}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span className="inline-flex items-center gap-1 rounded-full bg-ink-900/60 backdrop-blur-md px-2.5 py-1 font-bold text-white">
+                  <Clock size={11} />
+                  {heroDuration}
+                </span>
+              </div>
+            </div>
+
+            <span className="absolute inset-0 grid place-items-center bg-ink-900/0 opacity-0 transition-all group-hover:bg-ink-900/30 group-hover:opacity-100">
+              <ZoomIn size={36} className="text-white" />
+            </span>
+          </motion.button>
+
+          {/* Names list — quick jump into the gallery */}
+          <div className="lg:col-span-4">
+            <h3 className="text-xl font-extrabold text-ink-900 dark:text-ink-100">
+              {t('beforeAfter.stories')}
+            </h3>
+            <ul className="mt-4 space-y-3">
+              {studentProgress.map((s, i) => (
+                <NameRow key={s.id} student={s} index={i} onOpen={(kind) => openAt(s.id, kind)} />
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
-
-      <ProgressModal
-        student={studentProgress.find((s) => s.id === activeId) || null}
-        onClose={() => setActiveId(null)}
-      />
-    </section>
-  );
-}
-
-function StudentRow({ student, index, onOpen }) {
-  const { t } = useTranslation();
-  const name     = t(`beforeAfter.list.${student.id}.name`);
-  const country  = t(`beforeAfter.list.${student.id}.country`);
-  const duration = t(`beforeAfter.list.${student.id}.duration`);
-
-  return (
-    <motion.button
-      type="button"
-      onClick={onOpen}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.5, delay: index * 0.06 }}
-      whileHover={{ y: -4 }}
-      className="group flex items-center gap-4 rounded-2xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#150B07]/70 p-3 text-start transition-all hover:border-flame-500/40 hover:shadow-flame"
-    >
-      <span className="relative inline-flex h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-ink-900/10 dark:border-ink-100/10">
-        <img src={student.after} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      </span>
-      <span className="flex-1 min-w-0">
-        <span className="block text-base font-extrabold text-ink-900 dark:text-ink-100 truncate">
-          {name}
-        </span>
-        <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-ink-600 dark:text-ink-300">
-          <span className="inline-flex items-center gap-1">
-            <MapPin size={11} className="text-flame-500" />
-            {country}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Clock size={11} className="text-flame-500" />
-            {duration}
-          </span>
-        </span>
-      </span>
-      <span
-        aria-hidden
-        className="shrink-0 text-flame-500 opacity-0 transition-opacity group-hover:opacity-100"
-      >
-        <ChevronLeft size={18} className="rtl:hidden" />
-        <ChevronLeft size={18} className="hidden rtl:inline rotate-180" />
-      </span>
-    </motion.button>
-  );
-}
-
-function ProgressModal({ student, onClose }) {
-  const { t } = useTranslation();
-  const [lbIndex, setLbIndex] = useState(-1);
-  const isOpen = !!student;
-
-  // Mobile back button: lightbox first, then the modal
-  useModalHistory(isOpen && lbIndex < 0, onClose);
-  useModalHistory(lbIndex >= 0, () => setLbIndex(-1));
-
-  if (!student) return <AnimatePresence />;
-  const name     = t(`beforeAfter.list.${student.id}.name`);
-  const country  = t(`beforeAfter.list.${student.id}.country`);
-  const duration = t(`beforeAfter.list.${student.id}.duration`);
-  const note     = t(`beforeAfter.list.${student.id}.note`);
-
-  const slides = [
-    { src: student.before, alt: t('beforeAfter.before') },
-    { src: student.after,  alt: t('beforeAfter.after')  },
-  ];
-
-  return (
-    <>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-8"
-            onClick={onClose}
-            role="dialog"
-            aria-modal="true"
-            aria-label={name}
-          >
-            <div className="absolute inset-0 bg-ink-900/70 backdrop-blur-md" />
-
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.97 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative z-[61] w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl border border-white/10 bg-paper dark:bg-[#120A05] shadow-ink"
-            >
-              <div className="relative p-7 sm:p-10 pb-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label={t('common.close')}
-                  className="absolute end-4 top-4 grid h-10 w-10 place-items-center rounded-full border border-ink-900/10 dark:border-ink-100/15 text-ink-700 dark:text-ink-200 hover:bg-flame-500 hover:text-white hover:border-transparent transition-colors"
-                >
-                  <X size={18} />
-                </button>
-
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-ink-900 dark:text-ink-100">
-                  {name}
-                </h3>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                  <span className="rounded-full border border-flame-500/40 bg-flame-500/10 px-3 py-1 font-bold text-flame-700 dark:text-flame-300">
-                    {t(`scripts.${student.script}`)}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-ink-900/10 dark:border-ink-100/15 bg-paper/70 dark:bg-ink-900/40 px-3 py-1 font-semibold text-ink-700 dark:text-ink-200">
-                    <Clock size={13} className="text-flame-500" />
-                    {duration}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-ink-600 dark:text-ink-300 font-semibold">
-                    <MapPin size={13} className="text-flame-500" />
-                    {country}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-4 px-7 sm:px-10 pb-7">
-                <Frame
-                  src={student.before}
-                  tone="muted"
-                  label={t('beforeAfter.before')}
-                  onClick={() => setLbIndex(0)}
-                />
-                <Frame
-                  src={student.after}
-                  tone="primary"
-                  label={t('beforeAfter.after')}
-                  onClick={() => setLbIndex(1)}
-                />
-                <p className="leading-relaxed text-ink-700 dark:text-ink-200">{note}</p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <Lightbox
         open={lbIndex >= 0}
         index={lbIndex < 0 ? 0 : lbIndex}
         close={() => setLbIndex(-1)}
         slides={slides}
-        plugins={[Zoom]}
+        plugins={[Zoom, Counter]}
         zoom={{ maxZoomPixelRatio: 4 }}
+        counter={{ container: { style: { top: 16, bottom: 'unset' } } }}
         styles={{ container: { backgroundColor: 'rgba(10,5,2,0.95)' } }}
       />
-    </>
+    </section>
   );
 }
 
-function Frame({ src, tone, label, onClick }) {
+function NameRow({ student, index, onOpen }) {
+  const { t } = useTranslation();
+  const name     = t(`beforeAfter.list.${student.id}.name`);
+  const country  = t(`beforeAfter.list.${student.id}.country`);
+  const duration = t(`beforeAfter.list.${student.id}.duration`);
   return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      whileHover={{ scale: 1.005 }}
-      className={`group relative aspect-[16/9] w-full overflow-hidden rounded-3xl border ${
-        tone === 'primary' ? 'border-flame-500/40' : 'border-ink-900/10 dark:border-ink-100/10'
-      }`}
+    <motion.li
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.45, delay: index * 0.05 }}
+      className="rounded-2xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#150B07]/70 transition-colors hover:border-flame-500/40"
     >
-      <img
-        src={src}
-        alt={label}
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-      />
-      <span
-        className={`absolute top-4 start-4 rounded-full px-3 py-1 text-xs font-extrabold backdrop-blur-md ${
-          tone === 'primary'
-            ? 'bg-flame-500 text-white shadow-flame'
-            : 'bg-paper/95 dark:bg-ink-900/80 text-ink-900 dark:text-ink-100 border border-ink-900/10 dark:border-ink-100/10'
-        }`}
+      <button
+        type="button"
+        onClick={() => onOpen('after')}
+        className="group flex w-full items-center gap-3 p-3 text-start"
       >
-        {label}
-      </span>
-      <span className="absolute inset-0 grid place-items-center bg-ink-900/40 opacity-0 transition-opacity group-hover:opacity-100">
-        <ZoomIn size={28} className="text-white" />
-      </span>
-    </motion.button>
+        <span className="relative inline-flex h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-ink-900/10 dark:border-ink-100/10">
+          <img src={student.after} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-base font-extrabold text-ink-900 dark:text-ink-100 truncate">
+            {name}
+          </span>
+          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-ink-600 dark:text-ink-300">
+            <span className="inline-flex items-center gap-1">
+              <MapPin size={11} className="text-flame-500" />
+              {country}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Clock size={11} className="text-flame-500" />
+              {duration}
+            </span>
+          </span>
+        </span>
+        <span aria-hidden className="shrink-0 text-flame-500 opacity-0 transition-opacity group-hover:opacity-100">
+          <ChevronLeft size={18} className="rtl:hidden" />
+          <ChevronLeft size={18} className="hidden rtl:inline rotate-180" />
+        </span>
+      </button>
+      {/* Quick before/after pill row */}
+      <div className="grid grid-cols-2 gap-px border-t border-ink-900/10 dark:border-ink-100/10 text-center text-xs font-bold">
+        <button
+          type="button"
+          onClick={() => onOpen('before')}
+          className="py-2 text-ink-600 dark:text-ink-300 hover:bg-ink-900/5 dark:hover:bg-ink-100/5"
+        >
+          {t('beforeAfter.before')}
+        </button>
+        <button
+          type="button"
+          onClick={() => onOpen('after')}
+          className="py-2 text-flame-600 dark:text-flame-400 hover:bg-flame-500/10"
+        >
+          {t('beforeAfter.after')}
+        </button>
+      </div>
+    </motion.li>
   );
 }

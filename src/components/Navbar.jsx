@@ -6,14 +6,14 @@ import { ThemeToggle } from './ThemeToggle.jsx';
 import { LanguageToggle } from './LanguageToggle.jsx';
 
 const linkKeys = [
-  { href: '#home', key: 'home' },
-  { href: '#teachers', key: 'teachers' },
-  { href: '#about', key: 'about' },
+  { href: '#home',      key: 'home' },
+  { href: '#teachers',  key: 'teachers' },
+  { href: '#about',     key: 'about' },
+  { href: '#features',  key: 'features' },
+  { href: '#students',  key: 'students' },
+  { href: '#reviews',   key: 'reviews' },
   { href: '#mechanism', key: 'mechanism' },
-  { href: '#features', key: 'features' },
-  { href: '#students', key: 'students' },
-  { href: '#reviews', key: 'reviews' },
-  { href: '#register', key: 'register' },
+  { href: '#register',  key: 'register' },
 ];
 
 export function Navbar() {

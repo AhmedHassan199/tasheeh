@@ -2,46 +2,64 @@ import { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
-  ArrowRight, ArrowLeft, Check, Loader2, User, Mail, Phone,
+  ArrowRight, ArrowLeft, Check, Loader2, User, Mail,
   Globe, Cake, Sparkles, Mic, Video, Zap, Sprout, AlertTriangle,
+  Target, Heart, Award, Hourglass, Rocket, TrendingUp, Pen, Palette,
+  ThumbsUp, ThumbsDown, Lightbulb,
 } from 'lucide-react';
 import { teachers as TEACHERS } from '../data/teachers.js';
-import { SCRIPTS, canAddScript, teachersForScripts } from '../lib/registrationRules.js';
+import { canAddScript, teachersForScripts, visibleScriptsFor } from '../lib/registrationRules.js';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
+import { PhoneField } from './PhoneField.jsx';
 
 const ENDPOINT = import.meta.env.VITE_REGISTRATION_ENDPOINT || '';
 
-// One id maps to each of the 4 study tracks the academy actually offers.
 const TRACK_IDS = ['recorded', 'live', 'intensive', 'foundation'];
+const TRACK_ICONS = { recorded: Mic, live: Video, intensive: Zap, foundation: Sprout };
 
-const TRACK_ICONS = {
-  recorded:   Mic,
-  live:       Video,
-  intensive:  Zap,
-  foundation: Sprout,
+// 6 goals → 3 paths (A long-term, B intensive, C foundation)
+const GOALS = [
+  { id: 'scratch',      icon: Pen,         path: 'C' },
+  { id: 'hobby',        icon: Heart,       path: 'C' },
+  { id: 'master',       icon: Target,      path: 'A' },
+  { id: 'ijazah',       icon: Award,       path: 'A' },
+  { id: 'fast',         icon: Rocket,      path: 'B' },
+  { id: 'quickImprove', icon: TrendingUp,  path: 'B' },
+];
+
+const PATH_TO_TRACKS = {
+  A: ['recorded', 'live'],   // long-term — student picks recorded vs live
+  B: ['intensive'],          // intensive — single track
+  C: ['foundation'],         // foundation — single track
 };
 
-// Step machine — derived from current values rather than hard-coded
-// indexes. Adding/removing a step (e.g. teacher only when a long-term
-// track is picked) is straightforward.
+// Step machine — derived from current values rather than hard-coded indexes.
 function buildSteps(values) {
-  const steps = ['track', 'scripts'];
-  // Teacher choice only matters for long-term programmes
-  if (values.track === 'recorded' || values.track === 'live') {
-    steps.push('teacher');
-  }
+  const steps = ['filter'];
+  if (values.filter === 'art') steps.push('goal');
+  // Path A goes through commitment screen; if they say "no", we redirect to B.
+  if (values.path === 'A') steps.push('commitment');
+  // Path A still needs to choose recorded vs live; B and C are auto-set.
+  if (values.path === 'A') steps.push('track');
+  steps.push('scripts');
+  if (values.track === 'recorded' || values.track === 'live') steps.push('teacher');
   steps.push('info', 'review');
   return steps;
 }
 
 const initialValues = {
-  track: '',        // 'recorded' | 'live' | 'intensive' | 'foundation'
+  filter: '',           // 'regular' | 'art'
+  goal: '',             // GOALS[].id
+  path: '',             // 'A' | 'B' | 'C'
+  commitment: '',       // 'yes' | 'no'
+  track: '',            // TRACK_IDS
   scripts: [],
   teacher: '',
   name: '',
   email: '',
-  phone: '',
+  phoneCode: '+20',
+  phoneNumber: '',
   country: '',
   age: '',
 };
@@ -53,7 +71,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | submitting | done | error
 
-  const steps = useMemo(() => buildSteps(values), [values.track]);
+  const steps = useMemo(() => buildSteps(values), [values.filter, values.path, values.track]);
   const currentStep = steps[stepIdx];
   const totalSteps = steps.length;
 
@@ -62,18 +80,23 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
       const teacher = TEACHERS.find((tt) => tt.id === teacherId);
       const next = {
         ...values,
+        filter: 'art',
+        path: 'A',
         track: values.track || 'recorded',
         scripts: values.scripts.length ? values.scripts : (teacher?.scripts.slice(0, 1) ?? []),
         teacher: teacherId,
+        commitment: 'yes',
       };
       setValues(next);
       const nextSteps = buildSteps(next);
       setStepIdx(nextSteps.indexOf('info'));
     },
     presetService(serviceId) {
-      // Service ids match track ids 1:1
       if (!TRACK_IDS.includes(serviceId)) return;
-      const next = { ...values, track: serviceId };
+      const path = serviceId === 'foundation' ? 'C' :
+                   serviceId === 'intensive'  ? 'B' : 'A';
+      const next = { ...values, filter: 'art', path, track: serviceId };
+      if (path === 'A') next.commitment = 'yes';
       setValues(next);
       const nextSteps = buildSteps(next);
       setStepIdx(nextSteps.indexOf('scripts'));
@@ -106,12 +129,16 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
 
     setStatus('submitting');
     const payload = {
+      filter: values.filter,
+      goal: values.goal,
+      path: values.path,
+      commitment: values.commitment,
       track: values.track,
       scripts: values.scripts,
       teacher: values.teacher,
       name: values.name,
       email: values.email,
-      phone: values.phone,
+      phone: `${values.phoneCode} ${values.phoneNumber}`.trim(),
       country: values.country,
       age: values.age,
       submittedAt: new Date().toISOString(),
@@ -126,7 +153,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
           body: JSON.stringify(payload),
         });
       } else {
-        await new Promise((r) => setTimeout(r, 900)); // demo mode
+        await new Promise((r) => setTimeout(r, 900));
       }
       setStatus('done');
     } catch (_e) {
@@ -140,7 +167,6 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
-          {/* Pitch column */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -172,7 +198,6 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
             </ul>
           </motion.div>
 
-          {/* Form column */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -192,7 +217,6 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {/* Progress */}
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-sm font-bold text-ink-600 dark:text-ink-300">
                         {t('register.step')} {stepIdx + 1} {t('register.of')} {totalSteps}
@@ -209,17 +233,19 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
                       />
                     </div>
 
-                    {/* Step body */}
                     <div className="mt-7 min-h-[280px]">
-                      {currentStep === 'track'   && <StepTrack   values={values} update={update} />}
-                      {currentStep === 'scripts' && (
+                      {currentStep === 'filter'     && <StepFilter     values={values} update={update} />}
+                      {currentStep === 'goal'       && <StepGoal       values={values} update={update} />}
+                      {currentStep === 'commitment' && <StepCommitment values={values} update={update} />}
+                      {currentStep === 'track'      && <StepTrack      values={values} update={update} />}
+                      {currentStep === 'scripts'    && (
                         <StepScripts values={values} update={update} error={errors.scripts} />
                       )}
-                      {currentStep === 'teacher' && <StepTeacher values={values} update={update} />}
-                      {currentStep === 'info'    && (
+                      {currentStep === 'teacher'    && <StepTeacher    values={values} update={update} />}
+                      {currentStep === 'info'       && (
                         <StepInfo values={values} update={update} errors={errors} />
                       )}
-                      {currentStep === 'review'  && <StepReview values={values} />}
+                      {currentStep === 'review'     && <StepReview values={values} />}
                     </div>
 
                     {status === 'error' && (
@@ -229,7 +255,6 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
                       </div>
                     )}
 
-                    {/* Footer nav */}
                     <div className="mt-8 flex items-center justify-between gap-3">
                       <button
                         type="button"
@@ -292,12 +317,15 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
 // ───── helpers ─────
 function canAdvance(step, v) {
   switch (step) {
-    case 'track':   return !!v.track;
-    case 'scripts': return v.scripts.length > 0;
-    case 'teacher': return !!v.teacher;
-    case 'info':    return v.name && v.email && v.phone && v.country && v.age;
-    case 'review':  return true;
-    default:        return false;
+    case 'filter':     return !!v.filter;
+    case 'goal':       return !!v.goal;
+    case 'commitment': return !!v.commitment;
+    case 'track':      return !!v.track;
+    case 'scripts':    return v.scripts.length > 0;
+    case 'teacher':    return !!v.teacher;
+    case 'info':       return v.name && v.email && v.phoneNumber && v.country && v.age;
+    case 'review':     return true;
+    default:           return false;
   }
 }
 
@@ -306,7 +334,7 @@ function validateStep(step, v, t) {
   if (step === 'info') {
     if (!v.name || v.name.trim().length < 3) e.name = t('register.errors.name');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email || '')) e.email = t('register.errors.email');
-    if (!/^[+\d\s-]{8,}$/.test(v.phone || '')) e.phone = t('register.errors.phone');
+    if (!/^[\d\s-]{6,}$/.test(v.phoneNumber || '')) e.phone = t('register.errors.phone');
     if (!v.country || v.country.trim().length < 2) e.country = t('register.errors.country');
     const age = parseInt(v.age, 10);
     if (Number.isNaN(age) || age < 7 || age > 99) e.age = t('register.errors.age');
@@ -315,13 +343,13 @@ function validateStep(step, v, t) {
   return e;
 }
 
-// ───── step components ─────
+// ───── reusable choice card ─────
 function ChoiceCard({ icon: Icon, title, desc, active, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`group relative w-full rounded-2xl border p-5 text-start transition-all hover:-translate-y-1 ${
+      className={`group relative w-full h-full rounded-2xl border p-5 text-start transition-all hover:-translate-y-1 ${
         active
           ? 'border-flame-500 bg-flame-500/10 shadow-flame'
           : 'border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08] hover:border-flame-500/40'
@@ -335,20 +363,163 @@ function ChoiceCard({ icon: Icon, title, desc, active, onClick }) {
         <Icon size={20} />
       </span>
       <p className="mt-4 text-lg font-extrabold text-ink-900 dark:text-ink-100">{title}</p>
-      <p className="mt-1.5 text-sm leading-relaxed text-ink-700/85 dark:text-ink-200/80">{desc}</p>
+      {desc && <p className="mt-1.5 text-sm leading-relaxed text-ink-700/85 dark:text-ink-200/80">{desc}</p>}
     </button>
+  );
+}
+
+// ───── steps ─────
+function StepFilter({ values, update }) {
+  const { t } = useTranslation();
+  const pickRegular = () =>
+    update({ filter: 'regular', path: 'C', track: 'foundation', goal: 'scratch', scripts: [], teacher: '' });
+  const pickArt = () =>
+    update({ filter: 'art', path: '', track: '', goal: '', scripts: [], teacher: '' });
+
+  return (
+    <>
+      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">
+        {t('register.steps.filter')}
+      </h3>
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <ChoiceCard
+          icon={Pen}
+          title={t('register.filters.regular.title')}
+          desc={t('register.filters.regular.desc')}
+          active={values.filter === 'regular'}
+          onClick={pickRegular}
+        />
+        <ChoiceCard
+          icon={Palette}
+          title={t('register.filters.art.title')}
+          desc={t('register.filters.art.desc')}
+          active={values.filter === 'art'}
+          onClick={pickArt}
+        />
+      </div>
+
+      {/* Friendly note when "regular handwriting" is picked — we route them to Foundation */}
+      {values.filter === 'regular' && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mt-5 rounded-2xl border border-flame-500/40 bg-flame-500/10 p-4"
+        >
+          <p className="text-sm font-extrabold text-flame-700 dark:text-flame-300">
+            {t('register.filterRedirect.title')}
+          </p>
+          <p className="mt-1 text-sm text-ink-700 dark:text-ink-200 leading-relaxed">
+            {t('register.filterRedirect.body')}
+          </p>
+        </motion.div>
+      )}
+    </>
+  );
+}
+
+function StepGoal({ values, update }) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">
+        {t('register.steps.goal')}
+      </h3>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {GOALS.map((g) => {
+          const active = values.goal === g.id;
+          return (
+            <ChoiceCard
+              key={g.id}
+              icon={g.icon}
+              title={t(`register.goals.${g.id}.title`)}
+              desc={t(`register.goals.${g.id}.desc`)}
+              active={active}
+              onClick={() => {
+                const path = g.path;
+                const track =
+                  path === 'B' ? 'intensive' :
+                  path === 'C' ? 'foundation' : '';
+                update({
+                  goal: g.id,
+                  path,
+                  track,
+                  scripts: [],
+                  teacher: '',
+                  // Reset commitment unless we're staying on path A
+                  commitment: path === 'A' ? values.commitment : '',
+                });
+              }}
+            />
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function StepCommitment({ values, update }) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">
+        {t('register.steps.commitment')}
+      </h3>
+      <p className="mt-3 text-base leading-relaxed text-ink-700 dark:text-ink-200">
+        {t('register.commitment.question')}
+      </p>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <ChoiceCard
+          icon={ThumbsUp}
+          title={t('register.commitment.yes.title')}
+          desc={t('register.commitment.yes.desc')}
+          active={values.commitment === 'yes'}
+          onClick={() => update({ commitment: 'yes', path: 'A', track: '' })}
+        />
+        <ChoiceCard
+          icon={ThumbsDown}
+          title={t('register.commitment.no.title')}
+          desc={t('register.commitment.no.desc')}
+          active={values.commitment === 'no'}
+          onClick={() => update({ commitment: 'no', path: 'B', track: 'intensive' })}
+        />
+      </div>
+
+      {/* Smart suggestion banner when the user can't commit */}
+      {values.commitment === 'no' && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mt-5 flex items-start gap-3 rounded-2xl border border-flame-500/40 bg-flame-500/10 p-4"
+        >
+          <Lightbulb className="mt-0.5 shrink-0 text-flame-600 dark:text-flame-400" size={18} />
+          <div>
+            <p className="text-sm font-extrabold text-flame-700 dark:text-flame-300">
+              {t('register.commitment.switchTitle')}
+            </p>
+            <p className="mt-1 text-sm text-ink-700 dark:text-ink-200 leading-relaxed">
+              {t('register.commitment.switchBody')}
+            </p>
+          </div>
+        </motion.div>
+      )}
+    </>
   );
 }
 
 function StepTrack({ values, update }) {
   const { t } = useTranslation();
+  // Path A only — pick Recorded vs Live
+  const tracks = PATH_TO_TRACKS[values.path] || [];
   return (
     <>
       <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">
         {t('register.steps.track')}
       </h3>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        {TRACK_IDS.map((id) => {
+        {tracks.map((id) => {
           const Icon = TRACK_ICONS[id];
           return (
             <ChoiceCard
@@ -369,6 +540,8 @@ function StepTrack({ values, update }) {
 function StepScripts({ values, update, error }) {
   const { t } = useTranslation();
   const [hint, setHint] = useState('');
+  const list = visibleScriptsFor(values.track);
+  const isFoundation = values.track === 'foundation';
 
   const toggle = (id) => {
     if (values.scripts.includes(id)) {
@@ -376,12 +549,14 @@ function StepScripts({ values, update, error }) {
       setHint('');
       return;
     }
-    const verdict = canAddScript(values.scripts, id);
+    const verdict = canAddScript(values.scripts, id, values.track);
     if (!verdict.ok) {
       setHint(t(`register.ruleErrors.${verdict.reason}`));
       return;
     }
-    update({ scripts: [...values.scripts, id], teacher: '' });
+    // Foundation = single pick: replace selection
+    const nextScripts = isFoundation ? [id] : [...values.scripts, id];
+    update({ scripts: nextScripts, teacher: '' });
     setHint('');
   };
 
@@ -392,24 +567,26 @@ function StepScripts({ values, update, error }) {
       <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">
         {t('register.steps.scripts')}
       </h3>
-      <p className="mt-2 text-sm text-ink-600/85 dark:text-ink-300/80">{t('register.scriptsHint')}</p>
+      <p className="mt-2 text-sm text-ink-600/85 dark:text-ink-300/80">
+        {isFoundation ? t('register.scriptsHintFoundation') : t('register.scriptsHint')}
+      </p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {SCRIPTS.map((s) => {
+        {list.map((s) => {
           const selected = values.scripts.includes(s.id);
-          const verdict = canAddScript(values.scripts, s.id);
-          const disabled = !selected && !verdict.ok;
+          const verdict = canAddScript(values.scripts, s.id, values.track);
+          const disabled = !selected && !verdict.ok && s.active;
           return (
             <button
               key={s.id}
               type="button"
               onClick={() => toggle(s.id)}
-              disabled={disabled && !s.active}
+              disabled={!s.active && !selected}
               className={`relative flex items-center justify-between rounded-2xl border px-4 py-4 text-start transition-all ${
                 selected
                   ? 'border-flame-500 bg-flame-500/10 shadow-flame'
                   : disabled
-                  ? 'border-ink-900/5 dark:border-ink-100/5 bg-paper/40 dark:bg-[#150B07]/40 opacity-50 cursor-not-allowed'
+                  ? 'border-ink-900/5 dark:border-ink-100/5 bg-paper/40 dark:bg-[#150B07]/40 opacity-60'
                   : 'border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08] hover:border-flame-500/40 hover:-translate-y-0.5'
               }`}
               title={!verdict.ok && !selected ? t(`register.ruleErrors.${verdict.reason}`) : undefined}
@@ -471,7 +648,7 @@ function StepTeacher({ values, update }) {
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {candidates.map((tc) => {
             const selected = values.teacher === tc.id;
-            const name = t(`teachers.list.${tc.id}.name`);
+            const name = t(`teachers.list.${tc.id}.namePlain`);
             return (
               <button
                 key={tc.id}
@@ -518,7 +695,15 @@ function StepInfo({ values, update, errors }) {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <Field icon={User}  label={t('register.fields.name')}    value={values.name}    onChange={(v) => update({ name: v })}    error={errors.name} />
         <Field icon={Mail}  label={t('register.fields.email')}   type="email" dir="ltr" value={values.email}   onChange={(v) => update({ email: v })}   error={errors.email} />
-        <Field icon={Phone} label={t('register.fields.phone')}   type="tel"   dir="ltr" value={values.phone}   onChange={(v) => update({ phone: v })}   error={errors.phone} />
+
+        <PhoneField
+          code={values.phoneCode}
+          number={values.phoneNumber}
+          onCodeChange={(c) => update({ phoneCode: c })}
+          onNumberChange={(n) => update({ phoneNumber: n })}
+          error={errors.phone}
+        />
+
         <Field icon={Globe} label={t('register.fields.country')} value={values.country} onChange={(v) => update({ country: v })} error={errors.country} />
         <Field icon={Cake}  label={t('register.fields.age')}     type="number" min={7} max={99} value={values.age} onChange={(v) => update({ age: v })} error={errors.age} />
       </div>
@@ -554,11 +739,13 @@ function Field({ icon: Icon, label, type = 'text', value, onChange, error, dir, 
 function StepReview({ values }) {
   const { t } = useTranslation();
   const teacherName = values.teacher
-    ? t(`teachers.list.${values.teacher}.name`)
+    ? t(`teachers.list.${values.teacher}.namePlain`)
     : t('register.fields.teacherAuto');
 
   const rows = [
-    { label: t('register.summary.track'),   value: t(`register.tracks.${values.track}.title`) },
+    values.filter && { label: t('register.summary.filter'),  value: t(`register.filters.${values.filter}.title`) },
+    values.goal   && { label: t('register.summary.goal'),    value: t(`register.goals.${values.goal}.title`) },
+    values.track  && { label: t('register.summary.track'),   value: t(`register.tracks.${values.track}.title`) },
     { label: t('register.summary.scripts'), value: values.scripts.map((s) => t(`scripts.${s}`)).join(' + ') || '—' },
     (values.track === 'recorded' || values.track === 'live') && {
       label: t('register.summary.teacher'), value: teacherName,
@@ -580,7 +767,7 @@ function StepReview({ values }) {
         <li className="flex items-center justify-between gap-3 px-5 py-3.5">
           <span className="text-sm font-bold text-ink-600 dark:text-ink-300">{values.name}</span>
           <span className="text-sm font-bold text-ink-700 dark:text-ink-200" dir="ltr">
-            {values.email} · {values.phone}
+            {values.email} · {values.phoneCode} {values.phoneNumber}
           </span>
         </li>
       </ul>
@@ -617,3 +804,5 @@ function Success({ name, email, reset }) {
     </motion.div>
   );
 }
+
+void Hourglass; // kept for icon search; not used currently

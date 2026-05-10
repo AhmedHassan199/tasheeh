@@ -1,6 +1,6 @@
-// All localised text (names, studentOf, awards, notes, durations) lives in
+// All localised text (names, info-box bullets, awards, notes) lives in
 // src/i18n/locales/{ar,en}.json under matching ID keys, e.g.
-//   teachers.list[id].name
+//   teachers.list[id].namePlain | nationality | dob | qualification | studentOf | awards
 //   beforeAfter.list[id].name | duration | note | country
 //   reviews.list[id].name | country | duration
 // This file holds only non-localised fields: scripts, image URLs, ages.
@@ -53,7 +53,6 @@ export const teachers = [
   },
 ];
 
-// Localised: text comes from beforeAfter.list[id].* — only image/age/script live here.
 export const studentProgress = [
   {
     id: 'eman',
@@ -93,16 +92,16 @@ export const studentReviews = [
   { id: 'r6', age: 40, src: 'https://images.unsplash.com/photo-1542621334-a254cf47733d?auto=format&fit=crop&w=900&q=80' },
 ];
 
-// UI placeholders for screenshots used in the "What sets us apart" section.
-// Replace with the academy's real community/Zoom captures when available.
-export const featurePlaceholders = {
-  community: [
-    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1531538606174-0f90ff5dce83?auto=format&fit=crop&w=900&q=80',
-  ],
-  live: [
-    'https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&w=1400&q=80',
-    'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?auto=format&fit=crop&w=1400&q=80',
-  ],
+// Per-feature image used in the "What sets us apart" preview area.
+// Keys must match feature ids in i18n -> features.items.*
+export const featurePreviews = {
+  community: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80',
+  tips:      'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1400&q=80',
+  feeding:   'https://images.unsplash.com/photo-1568322445389-f64ac2515020?auto=format&fit=crop&w=1400&q=80',
+  qa:        'https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&w=1400&q=80',
+  feedback:  'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=1400&q=80',
 };
+
+// Public Drive link to the Student Guide PDF — wired into the Mechanism CTA.
+export const STUDENT_GUIDE_URL =
+  'https://drive.google.com/file/d/1GCMMj0lN-LBke933SaoAit8N7ehKUQvm/view?usp=drive_link';

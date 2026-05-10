@@ -7,6 +7,7 @@ import { TeacherModal } from './TeacherModal.jsx';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
 import { ClickHint } from './ClickHint.jsx';
+import { HorizontalSlider } from './HorizontalSlider.jsx';
 
 export function InstructorsSection({ onRegisterWithTeacher }) {
   const { t } = useTranslation();
@@ -37,14 +38,20 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
           </div>
         </motion.div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Mobile: horizontal slider; desktop: 4-up grid */}
+        <HorizontalSlider className="mt-14 lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible lg:px-0 lg:mx-0 lg:pb-0 lg:snap-none">
           {teachers.map((teacher, i) => (
             <TeacherCard key={teacher.id} teacher={teacher} index={i} onOpen={setActive} />
           ))}
-        </div>
+        </HorizontalSlider>
       </div>
 
-      <TeacherModal teacher={active} onClose={() => setActive(null)} onRegister={onRegisterWithTeacher} />
+      <TeacherModal
+        teacher={active}
+        onClose={() => setActive(null)}
+        onSwitch={(t) => setActive(t)}
+        onRegister={onRegisterWithTeacher}
+      />
     </section>
   );
 }

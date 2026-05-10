@@ -3,10 +3,10 @@
     "home": "Home",
     "teachers": "Teachers",
     "about": "About",
-    "mechanism": "Study Tracks",
     "features": "What sets us apart",
-    "students": "Student Progress",
+    "students": "Before / After",
     "reviews": "Testimonials",
+    "mechanism": "Study Tracks",
     "register": "Register",
     "joinNow": "Join Now",
     "menu": "Menu"
@@ -22,8 +22,8 @@
     "yearsOld": "yrs",
     "studentGuide": "Student Guide (PDF)",
     "downloadGuide": "Download Student Guide",
-    "clickHint": "Tap a card to discover the details",
-    "videoSoon": "Walkthrough video coming soon"
+    "videoSoon": "Walkthrough video coming soon",
+    "of": "of"
   },
   "hero": {
     "title": "Tasheeh Academy",
@@ -36,55 +36,76 @@
       "instructors": { "value": "+4",   "label": "Master instructors" },
       "countries":   { "value": "+20",  "label": "Countries" }
     },
-    "scrollCue": "Scroll to discover",
-    "badges": {
-      "community":   "Exclusive student community",
-      "live":        "Monthly live sessions",
-      "inspiration": "Rare visual inspiration"
-    }
+    "scrollCue": "Scroll to discover"
   },
   "teachers": {
     "eyebrow": "Instructors",
     "title": "A handpicked elite of <accent>master calligraphers</accent>",
-    "subtitle": "Tap any card to discover the teacher and their works.",
-    "studentOf": "Trained under",
-    "awards": "Awards & Ijazat",
-    "works": "Selected works",
+    "subtitle": "Discover each master, their scripts, and selected works.",
+    "prefix": "Master",
+    "scriptsTaught": "Scripts taught",
     "registerWith": "Register with this teacher",
     "ctaPrompt": "Ready to start with",
-    "scriptsTaught": "Scripts taught",
+    "switchTeacher": "Switch teacher",
+    "info": {
+      "title": "Teacher card",
+      "name": "Name",
+      "scripts": "Scripts taught",
+      "nationality": "Nationality",
+      "dob": "Born",
+      "qualification": "Qualification",
+      "studentOf": "Trained under",
+      "awards": "Awards & participations",
+      "works": "Selected works"
+    },
     "list": {
       "abdulrahman-razq": {
-        "name": "Master Abdulrahman Razq",
+        "namePlain": "Abdulrahman Razq",
+        "nationality": "Egyptian",
+        "dob": "Born 1992 — Cairo",
+        "qualification": "BA in Applied Arts, Arabic Calligraphy major",
         "studentOf": ["Master Bilal Al-Barri", "Master Wissam Shawkat"],
         "awards": [
           "Gold Medal — Istanbul International Calligraphy Competition, 2022",
           "Ijazah in Thuluth from the Turkish Calligraphers Association",
-          "First Place — Sharjah Arabic Calligraphy Festival 2020"
+          "First Place — Sharjah Arabic Calligraphy Festival 2020",
+          "Featured in Dubai Arabic Calligraphy Biennial"
         ]
       },
       "yusuf-al-husni": {
-        "name": "Master Yusuf Al-Husni",
+        "namePlain": "Yusuf Al-Husni",
+        "nationality": "Syrian",
+        "dob": "Born 1988 — Damascus",
+        "qualification": "Faculty of Fine Arts, Damascus",
         "studentOf": ["Master Davut Bektaş", "Master Hasan Çelebi"],
         "awards": [
           "Ijazah in Diwani, 2018",
-          "Jury Award — Tehran International Biennial"
+          "Jury Award — Tehran International Biennial",
+          "Featured in Istanbul Arabic Calligraphy Exhibition"
         ]
       },
       "kamal-al-shami": {
-        "name": "Master Kamal Al-Shami",
+        "namePlain": "Kamal Al-Shami",
+        "nationality": "Syrian",
+        "dob": "Born 1985 — Aleppo",
+        "qualification": "MA in History of Arabic Calligraphy",
         "studentOf": ["Master Gholamhossein Amirkhani"],
         "awards": [
           "Second Place — Jali Calligraphy Competition, 2021",
-          "Certified instructor — Damascus Arabic Calligraphy Society"
+          "Certified instructor — Damascus Arabic Calligraphy Society",
+          "Ijazah in Thuluth Jali"
         ]
       },
       "mohamed-al-baghdadi": {
-        "name": "Master Mohamed Al-Baghdadi",
+        "namePlain": "Mohamed Al-Baghdadi",
+        "nationality": "Iraqi",
+        "dob": "Born 1990 — Baghdad",
+        "qualification": "BA in Fine Arts, University of Baghdad",
         "studentOf": ["Master Salah Sherzad"],
         "awards": [
           "Ijazah in Naskh and Thuluth, 2019",
-          "Featured in international exhibitions in Cairo and Istanbul"
+          "Featured in international exhibitions in Cairo and Istanbul",
+          "Iraq Calligraphy Competition — Distinction Award"
         ]
       }
     }
@@ -95,28 +116,16 @@
     "lead": "We launched in 2022 to establish the authentic methodology of Arabic calligraphy. We do not run quick courses — we offer a long-term academic journey whose goal is to forge a true, qualified calligrapher.",
     "pillars": {
       "vision": {
-        "title": "We go beyond the letter",
-        "body": "We pass on the essentials of years of practice: posture, grip, paper and ink, visual memory, and self-critique."
+        "title": "A vision beyond the letter",
+        "body": "Our philosophy goes beyond simply correcting letters. We pass on years of professional experience to our students, attending to every detail that shapes a real calligrapher — from posture and grip, through the secrets of paper and ink, to building visual memory and disciplining the soul for patience and reflection."
       },
       "boundless": {
-        "title": "We teach without borders",
-        "body": "We harness online teaching to break geography, save students travel, and turn every minute into real practice."
+        "title": "Borderless learning",
+        "body": "Believing in the value of time, we harness online learning to break every geographical barrier. Our goal is to spare the student the cost of search and travel, and to direct every minute of their effort into real practice — under direct, precise supervision from home."
       },
       "mastery": {
-        "title": "We pick mastery from its source",
-        "body": "We restrict teaching to a chosen elite of internationally awarded masters with certified ijazat — no compromises on craft."
-      }
-    },
-    "methodology": {
-      "eyebrow": "Methodology",
-      "title": "We progress step by step, the <accent>Mashq</accent> way",
-      "highlight": "Our method is built on repetition.",
-      "highlightSub": "Progress to the next lesson is by mastery, not by repetition count.",
-      "steps": {
-        "1": "Single letters",
-        "2": "Letter joins",
-        "3": "Line composition",
-        "4": "Long-form text"
+        "title": "Our masters — mastery from its source",
+        "body": "We believe authentic art can only be received from trusted sources. Teaching at Tasheeh is therefore restricted to a chosen elite of master calligraphers, internationally awarded and certified with formal ijazat."
       }
     }
   },
@@ -125,6 +134,8 @@
     "title": "Pick <accent>your way</accent> to learn",
     "subtitle": "Four tracks covering every level — from first stroke to mastery.",
     "openDetails": "View details",
+    "downloadGuide": "Download Student Guide (PDF)",
+    "guideLine": "Read the full Student Guide for every detail of study mechanics, plans, and registration policies.",
     "headers": {
       "audience":    "Who is this for?",
       "duration":    "Expected duration",
@@ -137,13 +148,14 @@
         "title": "Traditional Correction",
         "tag": "Core programme",
         "summary": "The traditional Mashq system, long-term, with your dedicated master.",
-        "audience": "The serious student aiming for true mastery — patient, committed, and looking for a structured long-term path.",
+        "audience": "The serious student aiming for true mastery, with the time and willingness to study consistently every week, over the long term.",
         "duration": "Two to three years, longer or shorter based on your dedication and pace.",
         "details": [
           "Four lessons per month — one per week, sent by email.",
           "Get your correction back as a video + image on your private Drive.",
           "Weekly attendance and progress tracking.",
-          "Curated practice and email reminders to stay on track."
+          "Curated practice and email reminders to stay on track.",
+          "Monthly live Zoom session for all academy students."
         ]
       },
       "live": {
@@ -155,8 +167,9 @@
         "details": [
           "Weekly live Zoom session at a fixed time.",
           "Direct interaction and instant questions.",
-          "Lesson correction at the start of the session, followed by live explanation of new segments. Session length: 1–1.5 hours.",
-          "Posture, grip, and rhythm tuned under immediate supervision."
+          "Lesson correction at the start of the session, followed by live explanation of new segments.",
+          "Posture, grip, and rhythm tuned under immediate supervision.",
+          "Session length: 1–1.5 hours."
         ]
       },
       "intensive": {
@@ -166,10 +179,10 @@
         "audience": "Intermediate students wanting maximum information in the shortest possible window.",
         "duration": "Two to three months.",
         "details": [
-          "Hybrid system: live group Zoom explanation for everyone.",
-          "Private recorded correction for each student individually.",
+          "Hybrid system: live group Zoom explanation + private recorded correction for each student.",
           "Tightly scoped topics, fast rhythm.",
-          "An ideal warm-up before joining the long-term core programme."
+          "An ideal warm-up before joining the long-term core programme.",
+          "Fixed batches with announced start dates."
         ]
       },
       "foundation": {
@@ -179,42 +192,51 @@
         "audience": "Total beginners who never studied with a master and want a clean, structured start.",
         "duration": "Two to three months.",
         "details": [
+          "Foundation in Naskh or Ruqaa basics.",
           "Four lessons per month.",
           "Live Zoom explanation.",
           "Private recorded correction for each student.",
           "Introduction to pens, papers, inks; correct posture and grip."
         ]
       }
+    },
+    "methodologyHighlight": "Our method is built on repetition.",
+    "methodologyHighlightSub": "Progress to the next lesson is by mastery, not by repetition count.",
+    "methodologySteps": {
+      "1": "Single letters",
+      "2": "Letter joins",
+      "3": "Line composition",
+      "4": "Long-form text"
     }
   },
   "features": {
     "eyebrow": "What sets us apart",
     "title": "What makes your experience here <accent>exceptional</accent>?",
-    "subtitle": "Small details that make the big difference — included with every membership.",
+    "subtitle": "Tap any card to see glimpses of the experience.",
     "items": {
       "community": {
         "title": "Exclusive interactive student community",
-        "body": "Daily discussion, peer reviews, and student-to-student support in a private space."
+        "body": "Daily discussion, peer reviews, and student-to-student support — open only to academy members."
       },
       "tips": {
         "title": "Golden tips from masters",
-        "body": "Wisdom drawn from decades of practice — from grip to the secrets of harakat."
+        "body": "Secrets distilled from over a decade of practice — grip, rhythm, and the patience of harakat."
       },
       "feeding": {
         "title": "Rare visual feeding",
-        "body": "Curated artworks and manuscripts that build your visual memory daily."
+        "body": "Curated artworks and manuscripts that build your visual memory day after day."
       },
       "qa": {
-        "title": "Monthly live Q&A",
-        "body": "A direct meet with all teachers: calligraphy, its etiquette, its stories, and your questions."
+        "title": "Monthly Q&A sessions",
+        "body": "A monthly live Zoom with all our masters together — your questions, their stories, and the etiquette of the letter."
       },
       "feedback": {
         "title": "We listen deeply",
         "body": "We act on every piece of feedback — our experience evolves with our students."
       }
     },
-    "communityCaption": "Glimpses from the exclusive student community",
-    "liveCaption": "From our live Zoom sessions"
+    "previewLabel": "Preview",
+    "openPreview": "Open preview"
   },
   "beforeAfter": {
     "eyebrow": "Student Progress",
@@ -223,7 +245,7 @@
     "before": "Before",
     "after": "After",
     "stories": "Student stories",
-    "openCard": "Open card",
+    "openGallery": "Open the full gallery",
     "list": {
       "eman":      { "name": "Eman Abu Shusha",  "country": "Syria",   "duration": "5 months", "note": "Eight months between the two writings — five of them of structured study." },
       "student-2": { "name": "Ahmed Al-Hamdi",   "country": "Egypt",   "duration": "3 months", "note": "Visible progress in letter sizing and joins after consistent practice." },
@@ -234,7 +256,7 @@
     "eyebrow": "Testimonials",
     "title": "<accent>Their words</accent> say it all",
     "subtitle": "Messages from our students worldwide — honest reflections after a serious journey.",
-    "openMessage": "Open message",
+    "openMessage": "Open gallery",
     "list": {
       "r1": { "name": "Eman Abu Shusha",   "country": "Syria",        "duration": "5 months" },
       "r2": { "name": "Ahmed Al-Hamdi",    "country": "Egypt",        "duration": "3 months" },
@@ -257,11 +279,43 @@
     "step": "Step",
     "of": "of",
     "steps": {
-      "track":   "Pick a study track",
-      "scripts": "Pick scripts",
-      "teacher": "Choose teacher",
-      "info":    "Your details",
-      "review":  "Review"
+      "filter":     "What brings you here?",
+      "goal":       "What's your goal?",
+      "commitment": "Your weekly commitment",
+      "track":      "Pick a study track",
+      "scripts":    "Pick scripts",
+      "teacher":    "Choose teacher",
+      "info":       "Your details",
+      "review":     "Review"
+    },
+    "filters": {
+      "regular": {
+        "title": "Improve my regular handwriting",
+        "desc": "I want to write more clearly and beautifully — not necessarily as a fine art."
+      },
+      "art": {
+        "title": "Learn calligraphy as an art",
+        "desc": "I want to learn calligraphy properly with master teachers."
+      }
+    },
+    "filterRedirect": {
+      "title": "Excellent choice!",
+      "body": "The Beginners' Foundation track gives you Naskh or Ruqaa basics — and naturally improves your daily handwriting."
+    },
+    "goals": {
+      "scratch":      { "title": "Learn calligraphy from scratch", "desc": "I never studied with a master and want a clean start." },
+      "hobby":        { "title": "Pick up a beautiful hobby",       "desc": "I want the calm and joy of writing." },
+      "master":       { "title": "Master a specific script",        "desc": "I want true mastery in a script I love." },
+      "ijazah":       { "title": "Earn an ijazah",                  "desc": "My goal is the long road to certified mastery." },
+      "fast":         { "title": "Learn fast for a deadline",       "desc": "Time is tight — I need intensive content quickly." },
+      "quickImprove": { "title": "Boost my current level fast",     "desc": "I have basics and want a level-up." }
+    },
+    "commitment": {
+      "question": "Can you commit to 4–8 hours per week of practice and review?",
+      "yes":      { "title": "Yes — I have the time", "desc": "Consistency is part of my plan." },
+      "no":       { "title": "Time is tight",          "desc": "I can't commit weekly on a fixed schedule." },
+      "switchTitle": "We recommend the Intensive Course",
+      "switchBody":  "Instead of the long-term path, the Intensive Course delivers maximum content in a short time without a yearly commitment."
     },
     "tracks": {
       "recorded":   { "title": "Traditional Correction",   "desc": "Long-term Mashq system, video + image corrections." },
@@ -270,19 +324,24 @@
       "foundation": { "title": "Beginners' Foundation",    "desc": "Four monthly lessons, live Zoom + recorded correction." }
     },
     "scriptsHint": "Pick one or two compatible scripts. Max 2 scripts (8 lessons/month).",
+    "scriptsHintFoundation": "In the Foundation track we focus on a single script to master the basics.",
     "lessonsCount": "{{count}} lessons / month",
     "selected": "Selected",
     "ruleErrors": {
-      "max-two-scripts":     "Maximum two scripts only.",
-      "jali-must-be-solo":   "Thuluth Jali must be studied alone.",
-      "jali-locked":         "Cannot add another script to Thuluth Jali.",
-      "invalid-combination": "Combo not allowed. Allowed: Naskh + Thuluth or Diwani + Ruqaa (soon).",
-      "ruqaa-soon":          "Ruqaa is launching soon — pick another script for now."
+      "max-two-scripts":         "Maximum two scripts only.",
+      "jali-must-be-solo":       "Thuluth Jali must be studied alone.",
+      "jali-locked":             "Cannot add another script to Thuluth Jali.",
+      "invalid-combination":     "Combo not allowed. Allowed: (Naskh + Thuluth) or (Ruqaa + Diwani — soon).",
+      "ruqaa-soon":              "Ruqaa launches soon in the academic path — currently available only in the Foundation track.",
+      "foundation-single-only":  "In the Foundation track we pick a single script.",
+      "foundation-not-supported":"Foundation is currently available in Naskh or Ruqaa only."
     },
     "fields": {
       "name":             "Full name",
       "email":            "Email",
-      "phone":            "Phone",
+      "phone":            "WhatsApp number",
+      "phoneCode":        "Country code",
+      "phoneNumber":      "Number",
       "country":          "Country",
       "age":              "Age",
       "preferredTeacher": "Preferred teacher",
@@ -298,9 +357,11 @@
       "submitFailed":    "Could not submit — please try again."
     },
     "summary": {
-      "track":   "Study track",
-      "scripts": "Scripts",
-      "teacher": "Teacher"
+      "filter":   "Interest",
+      "goal":     "Goal",
+      "track":    "Study track",
+      "scripts":  "Scripts",
+      "teacher":  "Teacher"
     },
     "successTitle":      "Your application is in",
     "successBody":       "Welcome {{name}} — we'll reach out within 24 hours at {{email}} to schedule your first lesson.",
