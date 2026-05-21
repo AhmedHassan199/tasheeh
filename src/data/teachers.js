@@ -5,50 +5,51 @@
 //   reviews.list[id].name | country | duration
 // This file holds only non-localised fields: scripts, image URLs, ages.
 
+// Image assets are served locally from public/teachers/{id}/
+//   portrait.jpg            — instructor portrait (resized to 1200px)
+//   works/NN.jpg            — high-resolution artwork (4500px max — for Lightbox deep zoom)
+//   works/NN-thumb.jpg      — 800px thumbnail (for the gallery grid)
+
 export const teachers = [
   {
+    id: 'ahmed-hendawy',
+    scripts: ['thuluth', 'naskh'],
+    image: '/teachers/ahmed-hendawy/portrait.jpg',
+    gallery: [
+      { src: '/teachers/ahmed-hendawy/works/01.jpg', thumb: '/teachers/ahmed-hendawy/works/01-thumb.jpg' },
+      { src: '/teachers/ahmed-hendawy/works/02.jpg', thumb: '/teachers/ahmed-hendawy/works/02-thumb.jpg' },
+      { src: '/teachers/ahmed-hendawy/works/03.jpg', thumb: '/teachers/ahmed-hendawy/works/03-thumb.jpg' },
+      { src: '/teachers/ahmed-hendawy/works/04.jpg', thumb: '/teachers/ahmed-hendawy/works/04-thumb.jpg' },
+    ],
+  },
+  {
     id: 'abdulrahman-razq',
-    scripts: ['naskh', 'thuluth'],
-    image:
-      'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=900&q=80',
+    scripts: ['thuluth', 'naskh'],
+    image: '/teachers/abdulrahman-razq/portrait.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1568322445389-f64ac2515020?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1564767655658-4e6b365884ff?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1611605698335-8b1569810432?auto=format&fit=crop&w=1400&q=80',
+      { src: '/teachers/abdulrahman-razq/works/01.jpg', thumb: '/teachers/abdulrahman-razq/works/01-thumb.jpg' },
+      { src: '/teachers/abdulrahman-razq/works/02.jpg', thumb: '/teachers/abdulrahman-razq/works/02-thumb.jpg' },
+      { src: '/teachers/abdulrahman-razq/works/03.jpg', thumb: '/teachers/abdulrahman-razq/works/03-thumb.jpg' },
+      { src: '/teachers/abdulrahman-razq/works/04.jpg', thumb: '/teachers/abdulrahman-razq/works/04-thumb.jpg' },
+      { src: '/teachers/abdulrahman-razq/works/05.jpg', thumb: '/teachers/abdulrahman-razq/works/05-thumb.jpg' },
     ],
   },
   {
-    id: 'yusuf-al-husni',
-    scripts: ['diwani'],
-    image:
-      'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=900&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1597106776019-b4ecc878c202?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1604871000636-074fa5117945?auto=format&fit=crop&w=1400&q=80',
-    ],
-  },
-  {
-    id: 'kamal-al-shami',
+    id: 'omar-noor',
     scripts: ['jali'],
-    image:
-      'https://images.unsplash.com/photo-1542178243-bc20204b769f?auto=format&fit=crop&w=900&q=80',
+    image: '/teachers/omar-noor/portrait.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1568322445389-f64ac2515020?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1611605698335-8b1569810432?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1564767655658-4e6b365884ff?auto=format&fit=crop&w=1400&q=80',
+      { src: '/teachers/omar-noor/works/01.jpg', thumb: '/teachers/omar-noor/works/01-thumb.jpg' },
+      { src: '/teachers/omar-noor/works/02.jpg', thumb: '/teachers/omar-noor/works/02-thumb.jpg' },
+      { src: '/teachers/omar-noor/works/03.jpg', thumb: '/teachers/omar-noor/works/03-thumb.jpg' },
     ],
   },
   {
-    id: 'mohamed-al-baghdadi',
-    scripts: ['naskh', 'thuluth'],
-    image:
-      'https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=900&q=80',
+    id: 'mahmoud-abdullah',
+    scripts: ['diwani'],
+    image: '/teachers/mahmoud-abdullah/portrait.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1597106776019-b4ecc878c202?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1604871000636-074fa5117945?auto=format&fit=crop&w=1400&q=80',
-      'https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&w=1400&q=80',
+      { src: '/teachers/mahmoud-abdullah/works/01.jpg', thumb: '/teachers/mahmoud-abdullah/works/01-thumb.jpg' },
     ],
   },
 ];

@@ -23,7 +23,8 @@
     "studentGuide": "Student Guide (PDF)",
     "downloadGuide": "Download Student Guide",
     "videoSoon": "Walkthrough video coming soon",
-    "of": "of"
+    "of": "of",
+    "clickHint": "Tap a card to view full details"
   },
   "hero": {
     "title": "Tasheeh Academy",
@@ -47,6 +48,11 @@
     "registerWith": "Register with this teacher",
     "ctaPrompt": "Ready to start with",
     "switchTeacher": "Switch teacher",
+    "switchHint": "Tap any teacher's avatar to open their card, or use the arrows to step through.",
+    "currentBadge": "Currently viewing",
+    "prevTeacher": "Previous teacher",
+    "nextTeacher": "Next teacher",
+    "achievementsLabel": "documented achievements",
     "info": {
       "title": "Teacher card",
       "name": "Name",
@@ -58,61 +64,77 @@
       "awards": "Awards & participations",
       "works": "Selected works"
     },
+    "zoomHint": "Tap to open with deep zoom",
+    "openWork": "Open full artwork",
     "list": {
+      "ahmed-hendawy": {
+        "namePlain": "Ahmed Hendawy",
+        "nationality": "Egyptian",
+        "dob": "Born 1998",
+        "qualification": "BSc in Mechanical Engineering — Alexandria University — 2021",
+        "studentOf": ["Master Abdulrahman Razq"],
+        "awards": [
+          "Honourable Mention — IRCICA Competition (Naskh), 2025",
+          "Honourable Mention — Fujairah International Arabic Calligraphy Competition (Naskh), 2025",
+          "Honoured to write the 19th juz of the Holy Qur'an for Al-Azhar Al-Sharif in Naskh, 2022",
+          "Finalist — Prince Mohammed bin Salman Initiative for Arabic Calligraphy (Naskh), 2024"
+        ]
+      },
       "abdulrahman-razq": {
         "namePlain": "Abdulrahman Razq",
         "nationality": "Egyptian",
-        "dob": "Born 1992 — Cairo",
-        "qualification": "BA in Applied Arts, Arabic Calligraphy major",
-        "studentOf": ["Master Bilal Al-Barri", "Master Wissam Shawkat"],
+        "dob": "Born 1993",
+        "qualification": "Licence in Arts & Education — Arabic Department — Al-Azhar University",
+        "studentOf": ["Master Mohamed Gaber"],
         "awards": [
-          "Gold Medal — Istanbul International Calligraphy Competition, 2022",
-          "Ijazah in Thuluth from the Turkish Calligraphers Association",
-          "First Place — Sharjah Arabic Calligraphy Festival 2020",
-          "Featured in Dubai Arabic Calligraphy Biennial"
+          "Honourable Mention — IRCICA Competition (Naskh & Thuluth), 2019",
+          "Third Place — Prince Mohammed bin Salman Initiative for Arabic Calligraphy (Naskh), 2024",
+          "Honourable Mention — Fujairah International Arabic Calligraphy Competition (Naskh), 2025",
+          "Honoured to write the 4th juz of the Holy Qur'an for Al-Azhar Al-Sharif in Naskh, 2023"
         ]
       },
-      "yusuf-al-husni": {
-        "namePlain": "Yusuf Al-Husni",
-        "nationality": "Syrian",
-        "dob": "Born 1988 — Damascus",
-        "qualification": "Faculty of Fine Arts, Damascus",
-        "studentOf": ["Master Davut Bektaş", "Master Hasan Çelebi"],
+      "omar-noor": {
+        "namePlain": "Omar Noor",
+        "nationality": "Egyptian",
+        "dob": "Born 1985",
+        "qualification": "Licence in Arabic Language & Islamic Studies — Dar Al-Ulum — Cairo University",
+        "studentOf": ["Master Ahmed Fares Razq"],
         "awards": [
-          "Ijazah in Diwani, 2018",
-          "Jury Award — Tehran International Biennial",
-          "Featured in Istanbul Arabic Calligraphy Exhibition"
+          "Second Place — Future Masters Competition (Thuluth Jali), Turkey 2017",
+          "Honourable Mention — IRCICA Competition (Thuluth Jali), 2013",
+          "Two Honourable Mentions — Al-Baraka Bank Competition, Turkey 2013 & 2017",
+          "Two Honourable Mentions — Terengganu Festival, Malaysia 2015 & 2016",
+          "Honourable Mention — Balıkesir Competition, Turkey 2018",
+          "Honourable Mention — Üsküdar Competition, Turkey 2017",
+          "Second Place — Prince Mohammed bin Salman Initiative for Arabic Calligraphy (Thuluth Jali), 2024"
         ]
       },
-      "kamal-al-shami": {
-        "namePlain": "Kamal Al-Shami",
-        "nationality": "Syrian",
-        "dob": "Born 1985 — Aleppo",
-        "qualification": "MA in History of Arabic Calligraphy",
-        "studentOf": ["Master Gholamhossein Amirkhani"],
+      "mahmoud-abdullah": {
+        "namePlain": "Mahmoud Abdullah",
+        "nationality": "Egyptian",
+        "dob": "Born 1996",
+        "qualification": "Diploma in Arabic Calligraphy — Khalil Agha School, 2016",
+        "studentOf": ["Master Gamal Mahmoud — Diwani", "Master Abdo Al-Gammal — Naskh & Thuluth"],
         "awards": [
-          "Second Place — Jali Calligraphy Competition, 2021",
-          "Certified instructor — Damascus Arabic Calligraphy Society",
-          "Ijazah in Thuluth Jali"
-        ]
-      },
-      "mohamed-al-baghdadi": {
-        "namePlain": "Mohamed Al-Baghdadi",
-        "nationality": "Iraqi",
-        "dob": "Born 1990 — Baghdad",
-        "qualification": "BA in Fine Arts, University of Baghdad",
-        "studentOf": ["Master Salah Sherzad"],
-        "awards": [
-          "Ijazah in Naskh and Thuluth, 2019",
-          "Featured in international exhibitions in Cairo and Istanbul",
-          "Iraq Calligraphy Competition — Distinction Award"
+          "Second Place in Diwani — Warith Al-Anbiya Competition, Iraq 2025",
+          "Honourable Mention in Diwani — Fujairah International Competition, 2022",
+          "Honourable Mention in Naskh — Fujairah International Competition, 2025",
+          "Honourable Mention in Naskh & Thuluth — Future Masters Competition, Turkey 2021",
+          "Third Place in Thuluth — King Khalid University Competition, Saudi Arabia 2021",
+          "Third Place in Muhaqqaq — Warith Al-Anbiya Competition, Iraq 2023",
+          "Honourable Mention in regular Thuluth — Warith Al-Anbiya Competition, Iraq 2023",
+          "Honourable Mention in Naskh — Future Masters Competition, 2024",
+          "Contributor to the Al-Azhar Al-Sharif Mushaf, 2023",
+          "Participation in the Al-Azhar Al-Sharif Forum, 2nd & 3rd editions",
+          "Participation in the Sharjah Calligraphy Forum, 9th & 10th editions",
+          "Contributor to “Juz' Amma” at Bayt Al-Suhaymi, Egyptian Ministry of Culture, 2015"
         ]
       }
     }
   },
   "about": {
     "eyebrow": "About",
-    "title": "We are a specialised <accent>institution</accent> for the letterform",
+    "title": "A specialised institution for teaching <accent>Arabic calligraphy</accent>",
     "lead": "We launched in 2022 to establish the authentic methodology of Arabic calligraphy. We do not run quick courses — we offer a long-term academic journey whose goal is to forge a true, qualified calligrapher.",
     "pillars": {
       "vision": {
@@ -152,10 +174,9 @@
         "duration": "Two to three years, longer or shorter based on your dedication and pace.",
         "details": [
           "Four lessons per month — one per week, sent by email.",
-          "Get your correction back as a video + image on your private Drive.",
+          "Each correction is a recorded video + image, uploaded to your private Google Drive.",
           "Weekly attendance and progress tracking.",
-          "Curated practice and email reminders to stay on track.",
-          "Monthly live Zoom session for all academy students."
+          "Monthly live Zoom session for all academy students to answer their questions."
         ]
       },
       "live": {
@@ -189,14 +210,15 @@
         "title": "Beginners' Foundation",
         "tag": "For beginners",
         "summary": "Discover the world of calligraphy and learn the basics.",
-        "audience": "Total beginners who never studied with a master and want a clean, structured start.",
+        "audience": "Total beginners who have never studied calligraphy before and want to explore the art the right way.",
         "duration": "Two to three months.",
         "details": [
           "Foundation in Naskh or Ruqaa basics.",
           "Four lessons per month.",
           "Live Zoom explanation.",
           "Private recorded correction for each student.",
-          "Introduction to pens, papers, inks; correct posture and grip."
+          "Introduction to pens, papers, inks; correct posture and grip.",
+          "(Session length: 1 to 1.5 hours)."
         ]
       }
     },
@@ -215,12 +237,12 @@
     "subtitle": "Tap any card to see glimpses of the experience.",
     "items": {
       "community": {
-        "title": "Exclusive interactive student community",
-        "body": "Daily discussion, peer reviews, and student-to-student support — open only to academy members."
+        "title": "An interactive student community",
+        "body": "Private groups for each master's students — daily discussions and peer support in a space of your own."
       },
       "tips": {
-        "title": "Golden tips from masters",
-        "body": "Secrets distilled from over a decade of practice — grip, rhythm, and the patience of harakat."
+        "title": "Golden tips from the masters",
+        "body": "We pass on years of experience — from the grip of the pen to the secrets of finishing full compositions."
       },
       "feeding": {
         "title": "Rare visual feeding",
@@ -228,7 +250,7 @@
       },
       "qa": {
         "title": "Monthly Q&A sessions",
-        "body": "A monthly live Zoom with all our masters together — your questions, their stories, and the etiquette of the letter."
+        "body": "A monthly live Zoom with all academy masters — we answer your questions, share inspiring stories, and explore the ethics of learning."
       },
       "feedback": {
         "title": "We listen deeply",

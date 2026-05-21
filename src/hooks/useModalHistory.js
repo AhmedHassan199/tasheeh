@@ -1,17 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 // Hook that hijacks the browser back button while a modal is open.
 // On open we push a sentinel state onto history; on a popstate, we close
 // the modal. On unmount or external close, we go back ourselves so the
 // stack stays clean and the user doesn't need to press Back twice.
+//
+// IMPORTANT: the callback is held in a ref so that the effect only re-runs
+// when `isOpen` actually toggles. If we depended on `onClose` directly, an
+// inline lambda from the parent (recreated each render) would cause an
+// endless cycle of cleanup → history.back() → popstate → parent re-render,
+// which closes the modal on every state change inside it.
 export function useModalHistory(isOpen, onClose) {
+  const cbRef = useRef(onClose);
+  useEffect(() => {
+    cbRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!isOpen) return undefined;
 
     const sentinel = { tasheehModalAt: Date.now() };
     history.pushState(sentinel, '', location.href);
 
-    const onPop = () => onClose?.();
+    const onPop = () => cbRef.current?.();
     window.addEventListener('popstate', onPop);
 
     return () => {
@@ -22,5 +33,5 @@ export function useModalHistory(isOpen, onClose) {
         history.back();
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 }

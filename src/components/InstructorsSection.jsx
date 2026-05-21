@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { teachers } from '../data/teachers.js';
@@ -12,6 +12,10 @@ import { HorizontalSlider } from './HorizontalSlider.jsx';
 export function InstructorsSection({ onRegisterWithTeacher }) {
   const { t } = useTranslation();
   const [active, setActive] = useState(null);
+
+  // مراجع ثابتة لتفادى إعادة تشغيل effects داخل المودال عند كل re-render.
+  const handleClose  = useCallback(() => setActive(null), []);
+  const handleSwitch = useCallback((next) => setActive(next), []);
 
   return (
     <section id="teachers" className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture">
@@ -48,8 +52,8 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
 
       <TeacherModal
         teacher={active}
-        onClose={() => setActive(null)}
-        onSwitch={(t) => setActive(t)}
+        onClose={handleClose}
+        onSwitch={handleSwitch}
         onRegister={onRegisterWithTeacher}
       />
     </section>
