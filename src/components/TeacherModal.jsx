@@ -12,10 +12,11 @@ import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import { Ornament } from './Ornament.jsx';
+import { TeacherAvatar } from './TeacherAvatar.jsx';
 import { useModalHistory } from '../hooks/useModalHistory.js';
 import { teachers as ALL_TEACHERS } from '../data/teachers.js';
 
-export function TeacherModal({ teacher, onClose, onSwitch, onRegister }) {
+export function TeacherModal({ teacher, seen, onSeen, onClose, onSwitch, onRegister }) {
   const { t } = useTranslation();
   const [lbIndex, setLbIndex] = useState(-1);
   const [hoveredId, setHoveredId] = useState(null);
@@ -25,6 +26,7 @@ export function TeacherModal({ teacher, onClose, onSwitch, onRegister }) {
   // وامسح حالة الـ hover (وإلا الأفاتار اللى ضغطته يفضل dim).
   useEffect(() => {
     if (!teacher) return;
+    onSeen?.(teacher.id); // الأستاذ المعروض = مستكشَف (يخفت إطاره فى كل الشرائط)
     setHoveredId(null);
     setLbIndex(-1);
     if (scrollRef.current) {
@@ -295,35 +297,24 @@ export function TeacherModal({ teacher, onClose, onSwitch, onRegister }) {
                         <ChevronRight size={20} />
                       </button>
 
-                      {/* الأفاتارات (الباقون فقط) */}
+                      {/* الأفاتارات (الباقون فقط) — نفس الإطار التفاعلى (ستوري) بحالة seen */}
                       <div
                         className="flex flex-wrap items-start justify-center gap-5 sm:gap-7"
                         onMouseLeave={() => setHoveredId(null)}
                       >
-                        {others.map((tt) => {
-                          const otherName = t(`teachers.list.${tt.id}.namePlain`);
-                          const dim = hoveredId && hoveredId !== tt.id;
-                          return (
-                            <button
-                              key={tt.id}
-                              type="button"
-                              onClick={() => onSwitch?.(tt)}
-                              onMouseEnter={() => setHoveredId(tt.id)}
-                              onFocus={() => setHoveredId(tt.id)}
-                              onBlur={() => setHoveredId(null)}
-                              className={`group flex flex-col items-center gap-2 transition-all duration-300 hover:-translate-y-1.5 ${
-                                dim ? 'opacity-35 scale-95' : 'opacity-100 scale-100'
-                              }`}
-                            >
-                              <span className="relative grid h-20 w-20 place-items-center overflow-hidden rounded-full border-2 border-ink-900/10 dark:border-ink-100/15 transition-all group-hover:border-flame-500 group-hover:shadow-flame">
-                                <img src={tt.image} alt={otherName} className="absolute inset-0 h-full w-full object-cover" />
-                              </span>
-                              <span className="text-xs sm:text-sm font-extrabold text-ink-700 dark:text-ink-200 group-hover:text-flame-600 dark:group-hover:text-flame-400 transition-colors">
-                                {otherName}
-                              </span>
-                            </button>
-                          );
-                        })}
+                        {others.map((tt) => (
+                          <TeacherAvatar
+                            key={tt.id}
+                            teacher={tt}
+                            size="sm"
+                            seen={seen?.has(tt.id)}
+                            dim={hoveredId && hoveredId !== tt.id}
+                            onClick={() => onSwitch?.(tt)}
+                            onMouseEnter={() => setHoveredId(tt.id)}
+                            onFocus={() => setHoveredId(tt.id)}
+                            onBlur={() => setHoveredId(null)}
+                          />
+                        ))}
                       </div>
 
                       {/* السهم الأيسر (RTL = التالى) */}
