@@ -37,10 +37,12 @@ export function PhoneField({ code, number, onCodeChange, onNumberChange, error }
         <input
           type="tel"
           dir="ltr"
+          inputMode="tel"
           value={number}
           onChange={(e) => onNumberChange(e.target.value)}
           placeholder="123 456 7890"
-          className="w-full bg-transparent py-3.5 pe-4 outline-none text-ink-900 dark:text-ink-100 placeholder:text-ink-500/60"
+          /* text-center + tabular-nums علشان الأرقام تظهر فى منتصف المستطيل وبنفس عرض كل خانة */
+          className="w-full bg-transparent py-3.5 px-4 outline-none text-center tabular-nums tracking-wider text-ink-900 dark:text-ink-100 placeholder:text-ink-500/60"
         />
       </div>
       {error && <span className="mt-1.5 inline-block text-xs text-flame-600">{error}</span>}

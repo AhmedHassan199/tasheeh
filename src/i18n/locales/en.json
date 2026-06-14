@@ -302,14 +302,20 @@
     "step": "Step",
     "of": "of",
     "steps": {
-      "filter":     "What brings you here?",
-      "goal":       "What's your goal?",
-      "commitment": "Your weekly commitment",
-      "track":      "Pick a study track",
-      "scripts":    "Pick scripts",
-      "teacher":    "Choose teacher",
-      "info":       "Your details",
-      "review":     "Review"
+      "filter":           "What brings you here?",
+      "goal":             "What's your goal?",
+      "hobbyDuration":    "Learning duration",
+      "trackChoice":      "Correction mode",
+      "commitment":       "Your weekly commitment",
+      "track":            "Pick a study track",
+      "scripts":          "Pick scripts",
+      "lessonsPerMonth":  "Lessons per month",
+      "lessonsPerScript": "Lessons per script",
+      "priorExperience":  "Previous experience",
+      "uploadSamples":    "Samples of your writing",
+      "teacher":          "Choose teacher",
+      "info":             "Your details",
+      "review":           "Review"
     },
     "filters": {
       "regular": {
@@ -322,16 +328,25 @@
       }
     },
     "filterRedirect": {
-      "title": "Excellent choice!",
-      "body": "The Beginners' Foundation track gives you Naskh or Ruqaa basics — and naturally improves your daily handwriting."
+      "title": "Tasheeh teaches the art of Arabic calligraphy, not regular pen handwriting.",
+      "body": "Would you like to take a look at our Foundation track? You'll learn Naskh or Ruqaa basics — and your daily handwriting will naturally improve."
     },
     "goals": {
-      "scratch":      { "title": "Learn calligraphy from scratch", "desc": "I never studied with a master and want a clean start." },
-      "hobby":        { "title": "Pick up a beautiful hobby",       "desc": "I want the calm and joy of writing." },
-      "master":       { "title": "Master a specific script",        "desc": "I want true mastery in a script I love." },
-      "ijazah":       { "title": "Earn an ijazah",                  "desc": "My goal is the long road to certified mastery." },
-      "fast":         { "title": "Learn fast for a deadline",       "desc": "Time is tight — I need intensive content quickly." },
-      "quickImprove": { "title": "Boost my current level fast",     "desc": "I have basics and want a level-up." }
+      "scratch":   { "title": "Learn Arabic calligraphy from scratch",                   "desc": "A clean start for those new to calligraphy — Foundation track." },
+      "intensive": { "title": "Take a short intensive course",                            "desc": "Maximum content in the shortest time — Group Intensive." },
+      "hobby":     { "title": "Pick up a calm hobby in my free time",                     "desc": "The joy of the letter — we'll choose the duration in a moment." },
+      "master":    { "title": "Train under a master for mastery and competitions",       "desc": "Composing pieces, earning an ijazah, joining serious competitions." }
+    },
+    "hobbyDuration": {
+      "question": "How long would you like to learn?",
+      "long":  { "title": "A long journey over several years", "desc": "A calm deep practice — we'll then choose the correction mode." },
+      "short": { "title": "A short stretch (two or three months)", "desc": "Intensive in a short window — group intensive course." }
+    },
+    "trackChoice": {
+      "question": "Do you prefer private live sessions writing in front of your teacher, or the traditional recorded correction?",
+      "live":     { "desc": "Weekly one-on-one Zoom session at a fixed time." },
+      "recorded": { "desc": "Long-term Mashq — video + image correction on Drive." },
+      "priceNote": "Note: Live correction costs more because sessions are private with the teacher."
     },
     "commitment": {
       "question": "Can you commit to 4–8 hours per week of practice and review?",
@@ -346,10 +361,27 @@
       "intensive":  { "title": "Group Intensive Courses",  "desc": "Hybrid: live group Zoom + private recorded correction." },
       "foundation": { "title": "Beginners' Foundation",    "desc": "Four monthly lessons, live Zoom + recorded correction." }
     },
-    "scriptsHint": "Pick one or two compatible scripts. Max 2 scripts (8 lessons/month).",
+    "scriptsHint": "Pick one or two compatible scripts.",
     "scriptsHintFoundation": "In the Foundation track we focus on a single script to master the basics.",
     "lessonsCount": "{{count}} lessons / month",
     "selected": "Selected",
+    "lessonsPerMonth": {
+      "question": "How many lessons would you like per month?",
+      "unit":     "lessons / month"
+    },
+    "lessonsPerScript": {
+      "question": "Since you picked more than one script — how many lessons per month for each script?"
+    },
+    "priorExperience": {
+      "question": "Have you studied calligraphy before?",
+      "yes": { "title": "Yes — I've studied before", "desc": "We'll ask for samples of your writing to see your level." },
+      "no":  { "title": "No — this is my beginning", "desc": "No prerequisites — your journey starts fresh." }
+    },
+    "uploadSamples": {
+      "question": "Please attach images of your writing samples (up to 6 images).",
+      "cta":      "Click to choose images or drop them here",
+      "hint":     "Supported: JPG · PNG · WEBP — up to 6 images at a reasonable size."
+    },
     "ruleErrors": {
       "max-two-scripts":         "Maximum two scripts only.",
       "jali-must-be-solo":       "Thuluth Jali must be studied alone.",
@@ -360,31 +392,43 @@
       "foundation-not-supported":"Foundation is currently available in Naskh or Ruqaa only."
     },
     "fields": {
-      "name":             "Full name",
-      "email":            "Email",
-      "phone":            "WhatsApp number",
-      "phoneCode":        "Country code",
-      "phoneNumber":      "Number",
-      "country":          "Country",
-      "age":              "Age",
-      "preferredTeacher": "Preferred teacher",
-      "teacherAuto":      "We'll match you with a teacher"
+      "name":               "Full name",
+      "email":              "Email",
+      "phone":              "WhatsApp number",
+      "phoneCode":          "Country code",
+      "phoneNumber":        "Number",
+      "country":            "Country",
+      "residenceCountry":   "Country of residence",
+      "countryPlaceholder": "Pick your country of residence",
+      "arabCountries":      "Arab countries",
+      "restCountries":      "Rest of the world",
+      "age":                "Age",
+      "dob":                "Date of birth",
+      "day":                "Day",
+      "month":              "Month",
+      "year":               "Year",
+      "preferredTeacher":   "Preferred teacher",
+      "teacherAuto":        "We'll match you with a teacher"
     },
     "errors": {
-      "name":            "Name must be at least 3 characters",
-      "email":           "Invalid email",
-      "phone":           "Invalid phone number",
-      "country":         "Pick your country",
-      "age":             "Age must be 7–99",
-      "scriptsRequired": "Pick at least one script",
-      "submitFailed":    "Could not submit — please try again."
+      "name":             "Name must be at least 3 characters",
+      "email":            "Invalid email",
+      "phone":            "Invalid phone number",
+      "country":          "Pick your country of residence",
+      "age":               "Invalid age",
+      "birth":            "Pick day, month, and year of birth",
+      "scriptsRequired":  "Pick at least one script",
+      "samplesRequired":  "Please attach at least one sample of your writing",
+      "submitFailed":     "Could not submit — please try again."
     },
     "summary": {
-      "filter":   "Interest",
-      "goal":     "Goal",
-      "track":    "Study track",
-      "scripts":  "Scripts",
-      "teacher":  "Teacher"
+      "filter":           "Interest",
+      "goal":             "Goal",
+      "track":            "Study track",
+      "scripts":          "Scripts",
+      "lessonsPerMonth":  "Lessons / month",
+      "priorExperience":  "Prior experience",
+      "teacher":          "Teacher"
     },
     "successTitle":      "Your application is in",
     "successBody":       "Welcome {{name}} — we'll reach out within 24 hours at {{email}} to schedule your first lesson.",
