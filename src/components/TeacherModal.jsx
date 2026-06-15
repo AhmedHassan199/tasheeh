@@ -75,7 +75,7 @@ export function TeacherModal({ teacher, seen, onSeen, onClose, onSwitch, onRegis
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-8"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-6 lg:p-8"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -90,16 +90,17 @@ export function TeacherModal({ teacher, seen, onSeen, onClose, onSwitch, onRegis
               exit={{ opacity: 0, y: 30, scale: 0.97 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               onClick={(e) => e.stopPropagation()}
-              className="relative z-[61] w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-3xl border border-white/10 bg-paper dark:bg-[#120A05] shadow-ink"
+              className="relative z-[61] w-full max-w-5xl max-h-[95vh] sm:max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-white/10 bg-paper dark:bg-[#120A05] shadow-ink"
             >
-              {/* Header — image + name + scripts */}
+              {/* Header — image + name + scripts (مدمج على الموبايل، عمودان على الديسكتوب) */}
               <div className="grid gap-0 md:grid-cols-12">
-                <div className="relative md:col-span-5 aspect-[4/5] md:aspect-auto md:min-h-[420px] overflow-hidden">
+                {/* الصورة — أصغر على الموبايل (16:10) علشان ما تاخدش الشاشة كلها */}
+                <div className="relative md:col-span-5 aspect-[16/10] md:aspect-auto md:min-h-[420px] overflow-hidden">
                   <img src={teacher.image} alt={namePlain} className="absolute inset-0 h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink-900/80 via-transparent to-transparent md:bg-gradient-to-l" />
-                  <div className="absolute inset-x-6 bottom-6 md:hidden">
-                    <p className="text-sm font-semibold text-white/80">{prefix}</p>
-                    <h2 className="text-3xl font-extrabold text-white">{namePlain}</h2>
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink-900/85 via-ink-900/20 to-transparent md:bg-gradient-to-l" />
+                  <div className="absolute inset-x-5 bottom-5 md:hidden">
+                    <p className="text-xs font-bold tracking-wider text-white/85">{prefix}</p>
+                    <h2 className="mt-1 text-2xl font-extrabold text-white leading-tight">{namePlain}</h2>
                   </div>
                 </div>
 

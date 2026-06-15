@@ -25,7 +25,7 @@ export function StudyMechanism({ onPickService }) {
   const activeService = SERVICES.find((s) => s.id === active);
 
   return (
-    <section id="mechanism" className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture">
+    <section id="mechanism" className="relative overflow-hidden section-y bg-paper-texture">
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

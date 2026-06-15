@@ -15,7 +15,7 @@ export function HeroSection() {
   return (
     <section
       id="home"
-      className="relative isolate overflow-hidden bg-paper-texture pt-32 pb-24 sm:pt-40 sm:pb-32"
+      className="relative isolate overflow-hidden bg-paper-texture pt-24 pb-14 sm:pt-32 sm:pb-20 lg:pt-40 lg:pb-28"
     >
       <div aria-hidden className="absolute inset-0 ink-wash" />
 

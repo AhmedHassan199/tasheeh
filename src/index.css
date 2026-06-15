@@ -2,38 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---------- Base ---------- */
+/* ════════════════════════════════════════════════════════
+   نظام التصميم الموحَّد — جوّال أولًا
+   - typography rhythm (line-heights مناسبة للعربى)
+   - touch targets ≥ 44px
+   - safe-area-insets لشاشات iPhone
+   - focus rings واضحة (وصول)
+   ════════════════════════════════════════════════════════ */
+
 @layer base {
   :root {
     --bg: #F5EDE0;        /* logo cream */
     --fg: #1F140A;
     --muted: #553D24;
-    --line: rgba(31, 20, 10, 0.12);
+    --line: rgba(31, 20, 10, 0.10);
+    --line-strong: rgba(31, 20, 10, 0.18);
     --flame: #F44E1A;     /* logo orange */
+    --flame-soft: rgba(244, 78, 26, 0.10);
     --cream: #F5EDE0;
+    --ring: rgba(244, 78, 26, 0.45);
+
+    /* مقاييس متباعدة منسجمة عبر التطبيق */
+    --radius-sm: 0.625rem;   /* 10px — pills, chips */
+    --radius-md: 1rem;       /* 16px — inputs, small cards */
+    --radius-lg: 1.25rem;    /* 20px — buttons, mid cards */
+    --radius-xl: 1.75rem;    /* 28px — main cards */
+    --radius-2xl: 2rem;      /* 32px — modals, hero */
+
+    /* ارتفاع touch target موحّد (≥ 44px وصول) */
+    --touch: 2.75rem;        /* 44px */
+    --touch-lg: 3rem;        /* 48px */
+
+    /* safe area insets — iOS notch / home indicator */
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
   }
 
   .dark {
     --bg: #0E0805;
     --fg: #F5EDE0;
     --muted: #C9B79A;
-    --line: rgba(245, 237, 224, 0.12);
+    --line: rgba(245, 237, 224, 0.10);
+    --line-strong: rgba(245, 237, 224, 0.18);
     --flame: #FB6628;
+    --flame-soft: rgba(244, 78, 26, 0.15);
     --cream: #2A1A0E;
+    --ring: rgba(251, 102, 40, 0.55);
   }
 
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* تمنع الـ font-boost التلقائى على الموبايل (يخرّب الترتيب) */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
     background: var(--bg);
     color: var(--fg);
-    font-family: 'Cairo', system-ui, sans-serif;
+    font-family: 'Cairo', system-ui, -apple-system, 'Segoe UI', sans-serif;
     font-weight: 500;
+    font-size: 16px;
+    line-height: 1.7;           /* مناسبة للعربى — أعلى من اللاتينى */
+    letter-spacing: -0.005em;
     transition: background-color 400ms ease, color 400ms ease;
+    /* يمنع الـ tap-highlight الأزرق المُزعج على iOS/Android */
+    -webkit-tap-highlight-color: transparent;
+    /* iOS notch */
+    padding-top: var(--safe-t);
+  }
+
+  /* وصول: عناصر التنقّل بالكيبورد تظهر بحدّ برتقالى واضح */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* العناوين — تنسيق متناسق */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
   }
 
   ::selection {
@@ -41,23 +94,46 @@
     color: #FFF;
   }
 
+  /* scrollbar — مخفى على الموبايل، نحيف على الديسكتوب بلون البراند */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: var(--flame);
+    background: rgba(244, 78, 26, 0.45);
     border-radius: 999px;
-    border: 2px solid var(--bg);
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--flame); background-clip: padding-box; }
+  @media (max-width: 640px) {
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  }
+
+  /* النماذج — لا تكبر iOS الفونت تلقائيًا (≥16px من الأصل) */
+  input, select, textarea, button {
+    font-family: inherit;
+    font-size: 16px;
+  }
+
+  /* أزرار/inputs على iOS — إزالة التصميم الافتراضى */
+  input, select, textarea {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  /* تحت لا تخفى السهم الافتراضى للـ select */
+  select { background-image: none; }
+
+  img, video { display: block; max-width: 100%; height: auto; }
 }
 
-/* ---------- Components ---------- */
+/* ════════════════════════════════════════════════════════
+   مكوّنات معاد استخدامها
+   ════════════════════════════════════════════════════════ */
+
 @layer components {
-  /* Paper / parchment background with subtle grain */
+  /* ====== خلفية ورقية ====== */
   .bg-paper-texture {
     background-color: var(--bg);
     background-image:
@@ -66,7 +142,6 @@
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.30 0 0 0 0 0.18 0 0 0 0.10 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
     background-size: cover, cover, 240px 240px;
   }
-
   .dark .bg-paper-texture {
     background-image:
       radial-gradient(circle at 20% 10%, rgba(244, 78, 26, 0.10) 0%, transparent 45%),
@@ -74,103 +149,101 @@
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.88 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
 
-  /* Hero ink wash */
   .ink-wash {
     background:
       radial-gradient(ellipse at 20% 30%, rgba(244, 78, 26, 0.18), transparent 55%),
       radial-gradient(ellipse at 80% 70%, rgba(217, 188, 147, 0.20), transparent 55%);
   }
-
   .dark .ink-wash {
     background:
       radial-gradient(ellipse at 20% 30%, rgba(244, 78, 26, 0.30), transparent 55%),
       radial-gradient(ellipse at 80% 70%, rgba(168, 131, 90, 0.20), transparent 55%);
   }
 
-  /* Eyebrow label with the brand's diamond+line ornament */
+  /* ====== Eyebrow label موحَّد ====== */
   .eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
-    font-weight: 700;
+    gap: 0.55rem;
+    font-weight: 800;
     letter-spacing: 0.18em;
-    font-size: 0.78rem;
+    font-size: 0.75rem;             /* 12px — ثابت لتوحيد الأقسام */
+    text-transform: uppercase;
     color: var(--flame);
   }
   .eyebrow::before,
   .eyebrow::after {
     content: '';
-    width: 28px;
+    width: 24px;
     height: 1px;
     background: currentColor;
-    opacity: 0.5;
+    opacity: 0.55;
   }
 
-  /* Brand button */
-  .btn-flame {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.95rem 1.6rem;
-    border-radius: 999px;
-    background: var(--flame);
-    color: var(--cream);
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    box-shadow: 0 18px 40px -20px rgba(244, 78, 26, 0.7);
-    transition: transform 250ms ease, box-shadow 250ms ease, background 250ms ease;
-    overflow: hidden;
-  }
-  .dark .btn-flame {
-    color: #FFF;
-  }
-  .btn-flame:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 26px 50px -20px rgba(244, 78, 26, 0.85);
-  }
-  .btn-flame::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      120deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.35) 50%,
-      transparent 70%
-    );
-    transform: translateX(-100%);
-    transition: transform 700ms ease;
-  }
-  .btn-flame:hover::after {
-    transform: translateX(100%);
-  }
-
+  /* ====== أزرار موحَّدة (touch target ≥ 44px) ====== */
+  .btn-flame,
   .btn-ghost {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.9rem 1.5rem;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--touch);
+    padding: 0.75rem 1.4rem;
     border-radius: 999px;
-    border: 1px solid var(--line);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease, border-color 220ms ease, color 220ms ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .btn-flame {
+    position: relative;
+    background: var(--flame);
+    color: #FFF;
+    box-shadow: 0 14px 30px -14px rgba(244, 78, 26, 0.65);
+    overflow: hidden;
+  }
+  .btn-flame:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 20px 38px -16px rgba(244, 78, 26, 0.85);
+  }
+  .btn-flame:active { transform: translateY(0); }
+  .btn-flame::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.32) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 700ms ease;
+  }
+  .btn-flame:hover::after { transform: translateX(100%); }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--line-strong);
     color: var(--fg);
-    font-weight: 600;
-    transition: border-color 250ms ease, color 250ms ease, background 250ms ease;
   }
   .btn-ghost:hover {
     border-color: var(--flame);
     color: var(--flame);
+    background: var(--flame-soft);
   }
 
-  /* Big sectional title */
+  /* ====== العنوان الكبير ====== */
   .section-title {
     font-weight: 900;
-    font-size: clamp(2.25rem, 5vw, 4rem);
-    line-height: 1.1;
-    letter-spacing: -0.01em;
+    /* أصغر على الموبايل بشكل أوضح + قابل للقراءة */
+    font-size: clamp(2rem, 6.5vw, 4rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
   }
 
-  /* Headline gradient (matches the orange logo) */
+  .section-eyebrow-title {
+    /* spacing موحَّد بين eyebrow والعنوان فى كل قسم */
+    margin-top: 1.25rem;
+  }
+
   .text-flame-gradient {
     background: linear-gradient(135deg, #FB6628 0%, #F44E1A 50%, #A92E0A 100%);
     -webkit-background-clip: text;
@@ -178,7 +251,6 @@
     color: transparent;
   }
 
-  /* Glass card */
   .glass-card {
     background: rgba(255, 250, 240, 0.6);
     backdrop-filter: blur(14px);
@@ -190,27 +262,74 @@
     border-color: rgba(245, 237, 224, 0.08);
   }
 
-  /* Inky underline accent */
   .underline-ink {
     background-image: linear-gradient(transparent 60%, rgba(244, 78, 26, 0.35) 0);
     background-size: 100% 100%;
     background-repeat: no-repeat;
   }
 
-  /* Sticky vertical text */
   .vertical-text {
     writing-mode: vertical-rl;
     text-orientation: mixed;
   }
+
+  /* ====== سعة عمودية موحَّدة للأقسام (أصغر على الموبايل) ====== */
+  .section-y {
+    padding-top:    clamp(3.5rem, 9vw, 7rem);    /* ~56px → 112px */
+    padding-bottom: clamp(3.5rem, 9vw, 7rem);
+  }
+
+  /* ====== حقل Input موحَّد (للاستخدام فى المكوّنات) ====== */
+  .field-shell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: var(--touch-lg);   /* 48px */
+    padding-inline: 1rem;
+    border-radius: var(--radius-md);
+    background: rgba(245, 237, 224, 0.75);
+    border: 1px solid var(--line);
+    transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+  }
+  .dark .field-shell {
+    background: rgba(30, 18, 10, 0.75);
+  }
+  .field-shell:focus-within {
+    border-color: var(--flame);
+    box-shadow: 0 0 0 4px var(--flame-soft);
+  }
+
+  /* ====== Sticky bottom action bar للموبايل ====== */
+  .sticky-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    padding: 0.75rem 1rem calc(0.75rem + var(--safe-b));
+    background: linear-gradient(to top, var(--bg) 75%, transparent);
+    backdrop-filter: blur(8px);
+  }
 }
 
-/* ---------- Utilities ---------- */
+/* ════════════════════════════════════════════════════════
+   Utilities (mobile niceties)
+   ════════════════════════════════════════════════════════ */
+
 @layer utilities {
   .mask-fade-bottom {
     -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
     mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
   }
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty;  }
+
+  /* أخفى scrollbar فى الكاروسيلات وtab strips */
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* safe area helpers */
+  .pt-safe { padding-top: var(--safe-t); }
+  .pb-safe { padding-bottom: var(--safe-b); }
+
+  /* tap-only state (للموبايل) */
+  .active\:scale-tap:active { transform: scale(0.97); }
 }

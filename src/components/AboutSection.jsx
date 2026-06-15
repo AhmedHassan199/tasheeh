@@ -15,7 +15,7 @@ export function AboutSection() {
   const { t } = useTranslation();
 
   return (
-    <section id="about" className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture">
+    <section id="about" className="relative overflow-hidden section-y bg-paper-texture">
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

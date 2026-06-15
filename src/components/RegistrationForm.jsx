@@ -181,7 +181,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
   }
 
   return (
-    <section id="register" className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture">
+    <section id="register" className="relative overflow-hidden section-y bg-paper-texture">
       <div aria-hidden className="absolute inset-0 -z-10 bg-radial-flame opacity-60" />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
@@ -224,7 +224,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
             transition={{ duration: 0.7, delay: 0.1 }}
             className="lg:col-span-7"
           >
-            <div className="relative rounded-[32px] border border-ink-900/10 dark:border-ink-100/10 bg-paper/90 dark:bg-[#150B07]/85 p-6 sm:p-9 shadow-soft backdrop-blur-md">
+            <div className="relative rounded-3xl sm:rounded-[32px] border border-ink-900/10 dark:border-ink-100/10 bg-paper/90 dark:bg-[#150B07]/85 p-5 sm:p-7 lg:p-9 shadow-soft backdrop-blur-md">
               <AnimatePresence mode="wait">
                 {status === 'done' ? (
                   <Success key="success" name={values.name} email={values.email} reset={reset} />
@@ -236,15 +236,21 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-bold text-ink-600 dark:text-ink-300">
-                        {t('register.step')} {stepIdx + 1} {t('register.of')} {totalSteps}
+                    {/* مؤشّر خطوة محسَّن — badge برتقالى للرقم + اسم الخطوة بحجم بارز */}
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-flame-500 text-white text-sm font-extrabold shadow-flame">
+                        {stepIdx + 1}
                       </span>
-                      <span className="text-sm font-bold text-flame-600 dark:text-flame-400">
-                        {t(`register.steps.${currentStep}`)}
-                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-500 dark:text-ink-300">
+                          {t('register.step')} {stepIdx + 1} {t('register.of')} {totalSteps}
+                        </p>
+                        <p className="text-sm sm:text-base font-extrabold text-flame-600 dark:text-flame-400 leading-tight truncate">
+                          {t(`register.steps.${currentStep}`)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-900/10 dark:bg-ink-100/10">
+                    <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink-900/10 dark:bg-ink-100/10">
                       <motion.span
                         className="block h-full bg-flame-500"
                         animate={{ width: `${((stepIdx + 1) / totalSteps) * 100}%` }}
@@ -252,7 +258,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
                       />
                     </div>
 
-                    <div className="mt-7 min-h-[280px]">
+                    <div className="mt-6 sm:mt-7 min-h-[260px]">
                       {currentStep === 'filter'           && <StepFilter           values={values} update={update} />}
                       {currentStep === 'goal'             && <StepGoal             values={values} update={update} />}
                       {currentStep === 'hobbyDuration'    && <StepHobbyDuration    values={values} update={update} />}

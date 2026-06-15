@@ -63,7 +63,7 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
   }, []);
 
   return (
-    <section id="teachers" className="relative overflow-hidden py-24 sm:py-32 bg-paper-texture">
+    <section id="teachers" className="relative overflow-hidden section-y bg-paper-texture">
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         {/* العنوان */}
         <motion.div

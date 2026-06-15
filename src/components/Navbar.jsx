@@ -99,10 +99,10 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile pill rail — always visible, no hamburger */}
+      {/* Mobile pill rail — touch-friendly */}
       <div className="lg:hidden border-t border-ink-900/5 dark:border-ink-100/10">
         <div className="mx-auto max-w-7xl">
-          <div className="flex gap-2 overflow-x-auto px-4 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex gap-1.5 overflow-x-auto px-4 py-3 no-scrollbar">
             {linkKeys.map((link) => {
               const id = link.href.slice(1);
               const active = activeId === id;
@@ -110,7 +110,7 @@ export function Navbar() {
                 <a
                   key={link.href}
                   href={link.href}
-                  className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all ${
+                  className={`shrink-0 rounded-full border px-4 py-2 text-[13px] font-bold transition-all active:scale-tap ${
                     active
                       ? 'border-flame-500 bg-flame-500 text-white shadow-flame'
                       : 'border-ink-900/10 dark:border-ink-100/15 text-ink-700 dark:text-ink-200 hover:border-flame-500/40'
@@ -120,7 +120,7 @@ export function Navbar() {
                 </a>
               );
             })}
-            <LanguageToggle className="shrink-0 sm:hidden !h-7 !px-2.5 !text-[11px]" />
+            <LanguageToggle className="shrink-0 sm:hidden !h-9 !px-3 !text-[12px]" />
           </div>
         </div>
       </div>
