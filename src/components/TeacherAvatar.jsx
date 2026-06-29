@@ -2,9 +2,8 @@ import { useTranslation } from 'react-i18next';
 
 // Story-style circular avatar with a vibrant interactive border.
 // - Unseen  → vibrant orange conic gradient ring (entices exploration).
-// - Seen    → muted gray ring (so the user can tell who's left to explore).
-// Used both in the Instructors carousel and inside the teacher pop-up's
-// bottom navigator — identical UI + logic per the brief.
+// - Seen    → muted gray ring.
+// يعتمد على teacher.slug | teacher.name_ar | teacher.scripts فى البيانات.
 export function TeacherAvatar({
   teacher,
   seen = false,
@@ -17,12 +16,15 @@ export function TeacherAvatar({
   onFocus,
   onBlur,
 }) {
-  const { t } = useTranslation();
-  const name = t(`teachers.list.${teacher.id}.namePlain`);
-  const scripts = teacher.scripts.map((s) => t(`scripts.${s}`)).join(' · ');
+  const { t, i18n } = useTranslation();
+  const isAr = (i18n.language || 'ar').startsWith('ar');
+  const name = isAr
+    ? (teacher.name_ar || teacher.name_en || '')
+    : (teacher.name_en || teacher.name_ar || '');
+  const scripts = (teacher.scripts || []).map((s) => t(`scripts.${s}`)).join(' · ');
 
   const ring = size === 'sm' ? 'h-[68px] w-[68px]' : 'h-28 w-28 sm:h-32 sm:w-32';
-  const img = size === 'sm' ? 'h-16 w-16' : 'h-[6.25rem] w-[6.25rem] sm:h-[7.25rem] sm:w-[7.25rem]';
+  const img  = size === 'sm' ? 'h-16 w-16' : 'h-[6.25rem] w-[6.25rem] sm:h-[7.25rem] sm:w-[7.25rem]';
 
   return (
     <button
@@ -36,7 +38,6 @@ export function TeacherAvatar({
       className={`group flex shrink-0 flex-col items-center gap-3 outline-none transition-all duration-300
         ${dim ? 'opacity-35 scale-95' : 'opacity-100 scale-100'} hover:-translate-y-1.5`}
     >
-      {/* الإطار التفاعلى (ستوري) — متوهّج للمستكشَف لاحقًا، رمادى بعد الاستكشاف */}
       <span
         className={`relative grid ${ring} place-items-center rounded-full p-[3.5px] transition-all duration-500 ${
           seen
@@ -44,7 +45,6 @@ export function TeacherAvatar({
             : 'bg-[conic-gradient(from_140deg,theme(colors.flame.600),theme(colors.flame.300),theme(colors.flame.500),theme(colors.flame.700),theme(colors.flame.600))] shadow-[0_0_0_1px_rgba(244,78,26,0.25)] group-hover:shadow-flame'
         }`}
       >
-        {/* نبضة خفيفة حول غير المستكشَف لجذب الانتباه */}
         {!seen && (
           <span aria-hidden className="absolute inset-0 rounded-full bg-flame-500/20 blur-md animate-pulse" />
         )}

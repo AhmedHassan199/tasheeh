@@ -14,10 +14,12 @@ import 'yet-another-react-lightbox/plugins/counter.css';
 import { Ornament } from './Ornament.jsx';
 import { TeacherAvatar } from './TeacherAvatar.jsx';
 import { useModalHistory } from '../hooks/useModalHistory.js';
-import { teachers as ALL_TEACHERS } from '../data/teachers.js';
+import { teachers as FALLBACK_TEACHERS } from '../data/teachers.js';
 
-export function TeacherModal({ teacher, seen, onSeen, onClose, onSwitch, onRegister }) {
-  const { t } = useTranslation();
+export function TeacherModal({ teacher, allTeachers, seen, onSeen, onClose, onSwitch, onRegister }) {
+  const { t, i18n } = useTranslation();
+  const isAr = (i18n.language || 'ar').startsWith('ar');
+  const ALL_TEACHERS = allTeachers && allTeachers.length ? allTeachers : FALLBACK_TEACHERS;
   const [lbIndex, setLbIndex] = useState(-1);
   const [hoveredId, setHoveredId] = useState(null);
   const scrollRef = useRef(null);
@@ -26,21 +28,22 @@ export function TeacherModal({ teacher, seen, onSeen, onClose, onSwitch, onRegis
   // وامسح حالة الـ hover (وإلا الأفاتار اللى ضغطته يفضل dim).
   useEffect(() => {
     if (!teacher) return;
-    onSeen?.(teacher.id); // الأستاذ المعروض = مستكشَف (يخفت إطاره فى كل الشرائط)
+    onSeen?.(teacher.slug); // الأستاذ المعروض = مستكشَف (يخفت إطاره فى كل الشرائط)
     setHoveredId(null);
     setLbIndex(-1);
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [teacher?.id]);
+  }, [teacher?.slug]);
   const isOpen = !!teacher;
 
-  const namePlain     = teacher ? t(`teachers.list.${teacher.id}.namePlain`)     : '';
-  const nationality   = teacher ? t(`teachers.list.${teacher.id}.nationality`)   : '';
-  const dob           = teacher ? t(`teachers.list.${teacher.id}.dob`)           : '';
-  const qualification = teacher ? t(`teachers.list.${teacher.id}.qualification`) : '';
-  const studentOf     = teacher ? t(`teachers.list.${teacher.id}.studentOf`, { returnObjects: true }) : [];
-  const awards        = teacher ? t(`teachers.list.${teacher.id}.awards`,    { returnObjects: true }) : [];
+  // كل البيانات تُقرأ مباشرة من كائن المعلم — يأتى من admin API أو fallback محلى.
+  const namePlain     = teacher ? (isAr ? (teacher.name_ar || teacher.name_en) : (teacher.name_en || teacher.name_ar)) : '';
+  const nationality   = teacher?.nationality   || '';
+  const dob           = teacher?.dob           || '';
+  const qualification = teacher?.qualification || '';
+  const studentOf     = teacher?.student_of    || [];
+  const awards        = teacher?.awards        || [];
   const prefix        = t('teachers.prefix');
 
   useEffect(() => {
@@ -267,11 +270,11 @@ export function TeacherModal({ teacher, seen, onSeen, onClose, onSwitch, onRegis
                   - أسهم يمين/شمال للانتقال السريع للتالى/السابق فى الترتيب
                   - hover على أفاتار: الباقون يخفتون للتركيز عليه */}
               {(() => {
-                const others = ALL_TEACHERS.filter((tt) => tt.id !== teacher.id);
+                const others = ALL_TEACHERS.filter((tt) => tt.slug !== teacher.slug);
                 if (others.length === 0) return null;
 
                 // ترتيب دائرى للأسهم: prev = السابق، next = التالى
-                const currentIdx = ALL_TEACHERS.findIndex((tt) => tt.id === teacher.id);
+                const currentIdx = ALL_TEACHERS.findIndex((tt) => tt.slug === teacher.slug);
                 const prevTeacher = ALL_TEACHERS[(currentIdx - 1 + ALL_TEACHERS.length) % ALL_TEACHERS.length];
                 const nextTeacher = ALL_TEACHERS[(currentIdx + 1) % ALL_TEACHERS.length];
 
@@ -305,14 +308,14 @@ export function TeacherModal({ teacher, seen, onSeen, onClose, onSwitch, onRegis
                       >
                         {others.map((tt) => (
                           <TeacherAvatar
-                            key={tt.id}
+                            key={tt.slug}
                             teacher={tt}
                             size="sm"
-                            seen={seen?.has(tt.id)}
-                            dim={hoveredId && hoveredId !== tt.id}
+                            seen={seen?.has(tt.slug)}
+                            dim={hoveredId && hoveredId !== tt.slug}
                             onClick={() => onSwitch?.(tt)}
-                            onMouseEnter={() => setHoveredId(tt.id)}
-                            onFocus={() => setHoveredId(tt.id)}
+                            onMouseEnter={() => setHoveredId(tt.slug)}
+                            onFocus={() => setHoveredId(tt.slug)}
                             onBlur={() => setHoveredId(null)}
                           />
                         ))}

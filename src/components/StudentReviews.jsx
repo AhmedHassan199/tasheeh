@@ -7,26 +7,32 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
-import { studentReviews } from '../data/teachers.js';
+import { studentReviews as FALLBACK } from '../data/teachers.js';
+import { api } from '../lib/api.js';
+import { useApiData } from '../hooks/useApiData.js';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
 import { useModalHistory } from '../hooks/useModalHistory.js';
 
+// كل عنصر يدعم: { id?, name, country, duration, image | src, message? }
+// يأتى من /api/reviews أو fallback محلى.
+const imgOf = (r) => r.image || r.src;
+
 export function StudentReviews() {
   const { t } = useTranslation();
   const [lbIndex, setLbIndex] = useState(-1);
+  const { data: reviews } = useApiData(api.reviews, FALLBACK);
   useModalHistory(lbIndex >= 0, () => setLbIndex(-1));
 
-  const slides = studentReviews.map((r) => ({
-    src: r.src,
-    alt: t(`reviews.list.${r.id}.name`),
-    description: `${t(`reviews.list.${r.id}.country`)} · ${t(`reviews.list.${r.id}.duration`)}`,
+  if (!reviews.length) return null;
+
+  const slides = reviews.map((r) => ({
+    src: imgOf(r),
+    alt: r.name || '',
+    description: [r.country, r.duration].filter(Boolean).join(' · '),
   }));
 
-  const hero = studentReviews[0];
-  const heroName     = t(`reviews.list.${hero.id}.name`);
-  const heroCountry  = t(`reviews.list.${hero.id}.country`);
-  const heroDuration = t(`reviews.list.${hero.id}.duration`);
+  const hero = reviews[0];
 
   return (
     <section id="reviews" className="relative overflow-hidden section-y bg-paper-texture">
@@ -67,8 +73,8 @@ export function StudentReviews() {
             className="group relative lg:col-span-8 aspect-[16/10] overflow-hidden rounded-3xl border border-flame-500/30 bg-flame-500/5"
           >
             <img
-              src={hero.src}
-              alt={heroName}
+              src={imgOf(hero)}
+              alt={hero.name || ''}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
             />
             <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink-900/80 via-ink-900/15 to-transparent" />
@@ -79,16 +85,20 @@ export function StudentReviews() {
             </span>
 
             <div className="absolute inset-x-5 bottom-5 text-start">
-              <p className="text-2xl sm:text-3xl font-extrabold text-white">{heroName}</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-white">{hero.name}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                <span className="inline-flex items-center gap-1 rounded-full bg-ink-900/60 backdrop-blur-md px-2.5 py-1 font-bold text-white">
-                  <MapPin size={11} />
-                  {heroCountry}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-ink-900/60 backdrop-blur-md px-2.5 py-1 font-bold text-white">
-                  <Clock size={11} />
-                  {heroDuration}
-                </span>
+                {hero.country && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-ink-900/60 backdrop-blur-md px-2.5 py-1 font-bold text-white">
+                    <MapPin size={11} />
+                    {hero.country}
+                  </span>
+                )}
+                {hero.duration && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-ink-900/60 backdrop-blur-md px-2.5 py-1 font-bold text-white">
+                    <Clock size={11} />
+                    {hero.duration}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -100,8 +110,8 @@ export function StudentReviews() {
           {/* Names list */}
           <div className="lg:col-span-4">
             <ul className="grid gap-3">
-              {studentReviews.map((r, i) => (
-                <ReviewRow key={r.id} review={r} index={i} onOpen={() => setLbIndex(i)} />
+              {reviews.map((r, i) => (
+                <ReviewRow key={r.id ?? i} review={r} index={i} onOpen={() => setLbIndex(i)} />
               ))}
             </ul>
           </div>
@@ -124,10 +134,6 @@ export function StudentReviews() {
 
 function ReviewRow({ review, index, onOpen }) {
   const { t } = useTranslation();
-  const name     = t(`reviews.list.${review.id}.name`);
-  const country  = t(`reviews.list.${review.id}.country`);
-  const duration = t(`reviews.list.${review.id}.duration`);
-
   return (
     <motion.li
       initial={{ opacity: 0, y: 10 }}
@@ -141,22 +147,26 @@ function ReviewRow({ review, index, onOpen }) {
         className="group flex w-full items-center gap-3 rounded-2xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#150B07]/70 p-3 text-start transition-all hover:border-flame-500/40 hover:-translate-y-0.5"
       >
         <span className="relative inline-flex h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-ink-900/10 dark:border-ink-100/10">
-          <img src={review.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <img src={imgOf(review)} alt="" className="absolute inset-0 h-full w-full object-cover" />
         </span>
         <span className="flex-1 min-w-0">
           <span className="block text-base font-extrabold text-ink-900 dark:text-ink-100 truncate">
-            {name}
+            {review.name}
           </span>
           <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-ink-600 dark:text-ink-300">
-            <span className="inline-flex items-center gap-1">
-              <MapPin size={11} className="text-flame-500" />
-              {country}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Clock size={11} className="text-flame-500" />
-              {duration}
-            </span>
-            <span>{review.age} {t('common.yearsOld')}</span>
+            {review.country && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin size={11} className="text-flame-500" />
+                {review.country}
+              </span>
+            )}
+            {review.duration && (
+              <span className="inline-flex items-center gap-1">
+                <Clock size={11} className="text-flame-500" />
+                {review.duration}
+              </span>
+            )}
+            {review.age && <span>{review.age} {t('common.yearsOld')}</span>}
           </span>
         </span>
         <span aria-hidden className="shrink-0 text-flame-500 opacity-0 transition-opacity group-hover:opacity-100">

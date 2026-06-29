@@ -2,7 +2,9 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { teachers } from '../data/teachers.js';
+import { teachers as FALLBACK_TEACHERS } from '../data/teachers.js';
+import { api } from '../lib/api.js';
+import { useApiData } from '../hooks/useApiData.js';
 import { shuffle } from '../lib/shuffle.js';
 import { TeacherAvatar } from './TeacherAvatar.jsx';
 import { TeacherModal } from './TeacherModal.jsx';
@@ -19,17 +21,21 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
   const [filter, setFilter] = useState('all');
   const scrollerRef = useRef(null);
 
+  // المعلمون من admin API مع fallback للبيانات المحلية لو الـ API غير متاح.
+  const { data: teachers } = useApiData(api.teachers, FALLBACK_TEACHERS);
+
   // ترتيب عشوائى ثابت طوال الجلسة، يُعاد توليده عند كل refresh للصفحة.
-  const ordered = useMemo(() => shuffle(teachers), []);
+  // useMemo يعتمد على teachers — لو وصلت بيانات API بعد البداية يُعاد الترتيب مرة واحدة.
+  const ordered = useMemo(() => shuffle(teachers), [teachers]);
 
   // خيارات الفلتر مبنية ديناميكيًا من الخطوط الموجودة فعلًا.
   const filterOptions = useMemo(() => {
-    const present = SCRIPT_ORDER.filter((s) => teachers.some((tt) => tt.scripts.includes(s)));
+    const present = SCRIPT_ORDER.filter((s) => teachers.some((tt) => (tt.scripts || []).includes(s)));
     return ['all', ...present];
-  }, []);
+  }, [teachers]);
 
   const visible = useMemo(
-    () => (filter === 'all' ? ordered : ordered.filter((tt) => tt.scripts.includes(filter))),
+    () => (filter === 'all' ? ordered : ordered.filter((tt) => (tt.scripts || []).includes(filter))),
     [ordered, filter],
   );
 
@@ -43,13 +49,13 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
   }, []);
 
   const openTeacher = useCallback((teacher) => {
-    markSeen(teacher.id);
+    markSeen(teacher.slug);
     setActive(teacher);
   }, [markSeen]);
 
   const handleClose = useCallback(() => setActive(null), []);
   const handleSwitch = useCallback((next) => {
-    markSeen(next.id);
+    markSeen(next.slug);
     setActive(next);
   }, [markSeen]);
 
@@ -141,7 +147,7 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
             <AnimatePresence mode="popLayout" initial={false}>
               {visible.map((teacher) => (
                 <motion.div
-                  key={teacher.id}
+                  key={teacher.slug}
                   layout
                   initial={{ opacity: 0, scale: 0.92 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -151,7 +157,7 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
                 >
                   <TeacherAvatar
                     teacher={teacher}
-                    seen={seen.has(teacher.id)}
+                    seen={seen.has(teacher.slug)}
                     onClick={() => openTeacher(teacher)}
                   />
                 </motion.div>
@@ -163,6 +169,7 @@ export function InstructorsSection({ onRegisterWithTeacher }) {
 
       <TeacherModal
         teacher={active}
+        allTeachers={teachers}
         seen={seen}
         onSeen={markSeen}
         onClose={handleClose}

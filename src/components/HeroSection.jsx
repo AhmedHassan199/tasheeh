@@ -1,16 +1,25 @@
 import { motion } from 'framer-motion';
 import { ArrowDown, Sparkles, GraduationCap, BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSiteContent } from '../context/SiteContent.jsx';
 
 const fadeUp = { initial: { y: 28, opacity: 0 }, animate: { y: 0, opacity: 1 } };
 
 export function HeroSection() {
   const { t } = useTranslation();
-  const stats = [
-    t('hero.stats.founded',     { returnObjects: true }),
-    t('hero.stats.instructors', { returnObjects: true }),
-    t('hero.stats.countries',   { returnObjects: true }),
-  ];
+  const override = useSiteContent('hero');
+
+  // الإحصائيات: من admin لو متاحة، وإلا من i18n الافتراضى.
+  const stats = override?.stats?.length
+    ? override.stats
+    : [
+        t('hero.stats.founded',     { returnObjects: true }),
+        t('hero.stats.instructors', { returnObjects: true }),
+        t('hero.stats.countries',   { returnObjects: true }),
+      ];
+
+  const heroTitle  = override?.title  || t('hero.title');
+  const heroSlogan = override?.slogan || t('hero.slogan');
 
   return (
     <section
@@ -29,7 +38,7 @@ export function HeroSection() {
             className="lg:col-span-7"
           >
             <h1 className="section-title text-balance">
-              {t('hero.title')}
+              {heroTitle}
               <span className="block relative mt-3 h-3 w-40">
                 <svg viewBox="0 0 200 12" className="absolute inset-0 w-full h-full text-flame-500">
                   <motion.path
@@ -52,7 +61,7 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.5 }}
               className="mt-7 max-w-2xl text-xl sm:text-2xl leading-relaxed font-bold text-ink-800/90 dark:text-ink-100/90"
             >
-              {t('hero.slogan')}
+              {heroSlogan}
             </motion.p>
 
             <div className="mt-10 flex flex-wrap items-center gap-3">

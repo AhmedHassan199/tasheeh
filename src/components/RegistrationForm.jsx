@@ -13,8 +13,17 @@ import { canAddScript, teachersForScripts, visibleScriptsFor } from '../lib/regi
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
 import { PhoneField } from './PhoneField.jsx';
+import { api, apiEnabled } from '../lib/api.js';
 
-const ENDPOINT = import.meta.env.VITE_REGISTRATION_ENDPOINT || '';
+// Legacy fallback (Google Apps Script). نُفضّل الـ Laravel API لو متاح.
+const LEGACY_ENDPOINT = import.meta.env.VITE_REGISTRATION_ENDPOINT || '';
+
+const computeAge = (birthYear) => {
+  const y = parseInt(birthYear, 10);
+  if (!y) return null;
+  const age = new Date().getFullYear() - y;
+  return age > 0 && age < 130 ? age : null;
+};
 
 const TRACK_IDS = ['recorded', 'live', 'intensive', 'foundation'];
 const TRACK_ICONS = { recorded: Mic, live: Video, intensive: Zap, foundation: Sprout };
@@ -165,8 +174,38 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
     };
 
     try {
-      if (ENDPOINT) {
-        await fetch(ENDPOINT, {
+      // الأولوية لـ Laravel admin (يربط الـ lead بالـ inbox + بكل الـ services).
+      // الـ payload المُرسَل عقدته متوافقة مع LeadController validation
+      // (name/email/phone/country/lang/filter/goal/track/scripts/teacher_slug + age).
+      if (apiEnabled()) {
+        const apiPayload = {
+          name:         payload.name,
+          email:        payload.email,
+          phone:        payload.phone,
+          country:      payload.country,
+          lang:         payload.lang,
+          filter:       payload.filter,
+          goal:         payload.goal,
+          track:        payload.track,
+          scripts:      payload.scripts,
+          teacher_slug: payload.teacher,
+          age:          computeAge(values.birthYear),
+          // الحقول الإضافية يحفظها الـ service فى meta JSON على الـ lead.
+          meta: {
+            hobbyDuration:     payload.hobbyDuration,
+            lessonsPerMonth:   payload.lessonsPerMonth,
+            lessonsPerScript:  payload.lessonsPerScript,
+            priorExperience:   payload.priorExperience,
+            priorSamples:      payload.priorSamples,
+            countryCode:       payload.countryCode,
+            birth:             payload.birth,
+            submittedAt:       payload.submittedAt,
+          },
+        };
+        const ok = await api.sendLead(apiPayload);
+        if (!ok) throw new Error('lead-failed');
+      } else if (LEGACY_ENDPOINT) {
+        await fetch(LEGACY_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload),

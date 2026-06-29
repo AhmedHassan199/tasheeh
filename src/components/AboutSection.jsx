@@ -4,6 +4,7 @@ import { Compass, BookOpenText, Award } from 'lucide-react';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
 import { HorizontalSlider } from './HorizontalSlider.jsx';
+import { useSiteContent } from '../context/SiteContent.jsx';
 
 const PILLARS = [
   { id: 'vision',    icon: Compass     },
@@ -13,6 +14,10 @@ const PILLARS = [
 
 export function AboutSection() {
   const { t } = useTranslation();
+  const override = useSiteContent('about');
+
+  const title = override?.title || t('about.title');
+  const lead  = override?.lead  || t('about.lead');
 
   return (
     <section id="about" className="relative overflow-hidden section-y bg-paper-texture">
@@ -27,12 +32,12 @@ export function AboutSection() {
           <div className="lg:col-span-7">
             <span className="eyebrow">{t('about.eyebrow')}</span>
             <h2 className="section-title mt-6 text-balance">
-              <RichText text={t('about.title')} />
+              <RichText text={title} />
             </h2>
           </div>
           <div className="lg:col-span-5">
             <p className="text-lg leading-relaxed text-ink-700/85 dark:text-ink-200/85">
-              {t('about.lead')}
+              {lead}
             </p>
           </div>
         </motion.div>

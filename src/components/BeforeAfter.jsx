@@ -7,19 +7,20 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
-import { studentProgress } from '../data/teachers.js';
+import { studentProgress as FALLBACK } from '../data/teachers.js';
+import { api } from '../lib/api.js';
+import { useApiData } from '../hooks/useApiData.js';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
 import { useModalHistory } from '../hooks/useModalHistory.js';
 
-// Build a flat slide list — every student contributes a "before" then "after"
-// with descriptive labels so the lightbox counter reads naturally.
+// كل قصة تقدّم صورتين متتاليتين فى الـ Lightbox (قبل ثم بعد) مع label واضح.
 function buildSlides(progress, t) {
   const slides = [];
-  progress.forEach((s) => {
-    const name = t(`beforeAfter.list.${s.id}.name`);
-    slides.push({ src: s.before, alt: `${name} — ${t('beforeAfter.before')}`, studentId: s.id, kind: 'before' });
-    slides.push({ src: s.after,  alt: `${name} — ${t('beforeAfter.after')}`,  studentId: s.id, kind: 'after'  });
+  progress.forEach((s, i) => {
+    const name = s.name || `#${i + 1}`;
+    slides.push({ src: s.before, alt: `${name} — ${t('beforeAfter.before')}`, key: `${i}-b`, kind: 'before' });
+    slides.push({ src: s.after,  alt: `${name} — ${t('beforeAfter.after')}`,  key: `${i}-a`, kind: 'after'  });
   });
   return slides;
 }
@@ -27,18 +28,18 @@ function buildSlides(progress, t) {
 export function BeforeAfterSection() {
   const { t } = useTranslation();
   const [lbIndex, setLbIndex] = useState(-1);
-  const slides = buildSlides(studentProgress, t);
+
+  // البيانات من admin API مع fallback محلى — الموقع يكمّل بدون اتصال.
+  const { data: items } = useApiData(api.beforeAfter, FALLBACK);
+  const slides = buildSlides(items, t);
   useModalHistory(lbIndex >= 0, () => setLbIndex(-1));
 
-  // Hero preview shows the first student's "after"
-  const hero = studentProgress[0];
-  const heroName     = t(`beforeAfter.list.${hero.id}.name`);
-  const heroNote     = t(`beforeAfter.list.${hero.id}.note`);
-  const heroDuration = t(`beforeAfter.list.${hero.id}.duration`);
+  if (!items.length) return null;
 
-  const openAt = (id, kind) => {
-    const i = slides.findIndex((s) => s.studentId === id && s.kind === kind);
-    setLbIndex(i < 0 ? 0 : i);
+  const hero = items[0];
+  const openAt = (index, kind) => {
+    const slideIdx = slides.findIndex((s, i) => Math.floor(i / 2) === index && s.kind === kind);
+    setLbIndex(slideIdx < 0 ? 0 : slideIdx);
   };
 
   return (
@@ -69,7 +70,7 @@ export function BeforeAfterSection() {
           {/* Hero preview — visible single image with CTA to open the gallery */}
           <motion.button
             type="button"
-            onClick={() => openAt(hero.id, 'after')}
+            onClick={() => openAt(0, 'after')}
             initial={{ opacity: 0, scale: 0.97 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: '-50px' }}
@@ -78,7 +79,7 @@ export function BeforeAfterSection() {
           >
             <img
               src={hero.after}
-              alt={heroName}
+              alt={hero.name || ''}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
             />
             <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink-900/85 via-ink-900/20 to-transparent" />
@@ -93,14 +94,16 @@ export function BeforeAfterSection() {
             </span>
 
             <div className="absolute inset-x-5 bottom-5 text-start">
-              <p className="text-2xl sm:text-3xl font-extrabold text-white">{heroName}</p>
-              <p className="mt-1 text-sm text-white/85">{heroNote}</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="inline-flex items-center gap-1 rounded-full bg-ink-900/60 backdrop-blur-md px-2.5 py-1 font-bold text-white">
-                  <Clock size={11} />
-                  {heroDuration}
-                </span>
-              </div>
+              <p className="text-2xl sm:text-3xl font-extrabold text-white">{hero.name}</p>
+              {hero.note && <p className="mt-1 text-sm text-white/85">{hero.note}</p>}
+              {hero.duration && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-ink-900/60 backdrop-blur-md px-2.5 py-1 font-bold text-white">
+                    <Clock size={11} />
+                    {hero.duration}
+                  </span>
+                </div>
+              )}
             </div>
 
             <span className="absolute inset-0 grid place-items-center bg-ink-900/0 opacity-0 transition-all group-hover:bg-ink-900/30 group-hover:opacity-100">
@@ -114,8 +117,8 @@ export function BeforeAfterSection() {
               {t('beforeAfter.stories')}
             </h3>
             <ul className="mt-4 space-y-3">
-              {studentProgress.map((s, i) => (
-                <NameRow key={s.id} student={s} index={i} onOpen={(kind) => openAt(s.id, kind)} />
+              {items.map((s, i) => (
+                <NameRow key={s.id ?? i} student={s} index={i} onOpen={(kind) => openAt(i, kind)} />
               ))}
             </ul>
           </div>
@@ -138,9 +141,6 @@ export function BeforeAfterSection() {
 
 function NameRow({ student, index, onOpen }) {
   const { t } = useTranslation();
-  const name     = t(`beforeAfter.list.${student.id}.name`);
-  const country  = t(`beforeAfter.list.${student.id}.country`);
-  const duration = t(`beforeAfter.list.${student.id}.duration`);
   return (
     <motion.li
       initial={{ opacity: 0, y: 10 }}
@@ -159,17 +159,21 @@ function NameRow({ student, index, onOpen }) {
         </span>
         <span className="flex-1 min-w-0">
           <span className="block text-base font-extrabold text-ink-900 dark:text-ink-100 truncate">
-            {name}
+            {student.name}
           </span>
           <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-ink-600 dark:text-ink-300">
-            <span className="inline-flex items-center gap-1">
-              <MapPin size={11} className="text-flame-500" />
-              {country}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Clock size={11} className="text-flame-500" />
-              {duration}
-            </span>
+            {student.country && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin size={11} className="text-flame-500" />
+                {student.country}
+              </span>
+            )}
+            {student.duration && (
+              <span className="inline-flex items-center gap-1">
+                <Clock size={11} className="text-flame-500" />
+                {student.duration}
+              </span>
+            )}
           </span>
         </span>
         <span aria-hidden className="shrink-0 text-flame-500 opacity-0 transition-opacity group-hover:opacity-100">
@@ -177,7 +181,6 @@ function NameRow({ student, index, onOpen }) {
           <ChevronLeft size={18} className="hidden rtl:inline rotate-180" />
         </span>
       </button>
-      {/* Quick before/after pill row */}
       <div className="grid grid-cols-2 gap-px border-t border-ink-900/10 dark:border-ink-100/10 text-center text-xs font-bold">
         <button
           type="button"

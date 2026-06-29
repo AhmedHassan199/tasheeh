@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,18 +11,59 @@ import { ClickHint } from './ClickHint.jsx';
 import { HorizontalSlider } from './HorizontalSlider.jsx';
 import { useModalHistory } from '../hooks/useModalHistory.js';
 import { STUDENT_GUIDE_URL } from '../data/teachers.js';
+import { api } from '../lib/api.js';
+import { useApiData } from '../hooks/useApiData.js';
 
-const SERVICES = [
-  { id: 'recorded',   icon: Mic,    accent: 'from-flame-500/15 to-flame-500/0', methodology: true  },
-  { id: 'live',       icon: Video,  accent: 'from-flame-400/15 to-flame-400/0', methodology: true  },
-  { id: 'intensive',  icon: Zap,    accent: 'from-flame-600/15 to-flame-600/0', methodology: false },
-  { id: 'foundation', icon: Sprout, accent: 'from-flame-300/15 to-flame-300/0', methodology: false },
-];
+const STYLE_BY_CODE = {
+  recorded:   { icon: Mic,    accent: 'from-flame-500/15 to-flame-500/0' },
+  live:       { icon: Video,  accent: 'from-flame-400/15 to-flame-400/0' },
+  intensive:  { icon: Zap,    accent: 'from-flame-600/15 to-flame-600/0' },
+  foundation: { icon: Sprout, accent: 'from-flame-300/15 to-flame-300/0' },
+};
+
+const FALLBACK_CODES = ['recorded', 'live', 'intensive', 'foundation'];
+
+const styleFor = (code) => STYLE_BY_CODE[code] || { icon: Sparkles, accent: 'from-flame-500/15 to-flame-500/0' };
+
+const useServices = () => {
+  const { t } = useTranslation();
+  const { data } = useApiData(api.services, null);
+
+  return useMemo(() => {
+    const fromI18n = FALLBACK_CODES.map((code) => ({
+      code,
+      title:           t(`mechanism.services.${code}.title`, ''),
+      tag:             t(`mechanism.services.${code}.tag`, ''),
+      summary:         t(`mechanism.services.${code}.summary`, ''),
+      audience:        t(`mechanism.services.${code}.audience`, ''),
+      duration:        t(`mechanism.services.${code}.duration`, ''),
+      details:         t(`mechanism.services.${code}.details`, { returnObjects: true, defaultValue: [] }),
+      has_methodology: code === 'recorded' || code === 'live',
+    }));
+
+    if (!Array.isArray(data) || !data.length) return fromI18n;
+
+    return data.map((row) => {
+      const fb = fromI18n.find((x) => x.code === row.code) || {};
+      return {
+        code:            row.code,
+        title:           row.title    || fb.title    || '',
+        tag:             row.tag      || fb.tag      || '',
+        summary:         row.summary  || fb.summary  || '',
+        audience:        row.audience || fb.audience || '',
+        duration:        row.duration || fb.duration || '',
+        details:         Array.isArray(row.details) && row.details.length ? row.details : (fb.details || []),
+        has_methodology: !!row.has_methodology,
+      };
+    });
+  }, [data, t]);
+};
 
 export function StudyMechanism({ onPickService }) {
   const { t } = useTranslation();
+  const services = useServices();
   const [active, setActive] = useState(null);
-  const activeService = SERVICES.find((s) => s.id === active);
+  const activeService = services.find((s) => s.code === active);
 
   return (
     <section id="mechanism" className="relative overflow-hidden section-y bg-paper-texture">
@@ -51,13 +92,13 @@ export function StudyMechanism({ onPickService }) {
 
         {/* Service cards — single row on mobile, 4-up grid on desktop */}
         <HorizontalSlider className="mt-14 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible lg:px-0 lg:mx-0 lg:pb-0 lg:snap-none">
-          {SERVICES.map((s, i) => {
-            const Icon = s.icon;
+          {services.map((s, i) => {
+            const { icon: Icon, accent } = styleFor(s.code);
             return (
               <motion.button
-                key={s.id}
+                key={s.code}
                 type="button"
-                onClick={() => setActive(s.id)}
+                onClick={() => setActive(s.code)}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
@@ -65,7 +106,7 @@ export function StudyMechanism({ onPickService }) {
                 whileHover={{ y: -8 }}
                 className="group relative h-full w-full overflow-hidden rounded-3xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/80 dark:bg-[#150B07]/70 p-7 text-start transition-all hover:border-flame-500/40 hover:shadow-flame"
               >
-                <span aria-hidden className={`absolute inset-0 bg-gradient-to-br ${s.accent} opacity-60`} />
+                <span aria-hidden className={`absolute inset-0 bg-gradient-to-br ${accent} opacity-60`} />
                 <span className="relative flex items-center justify-between">
                   <span className="grid h-12 w-12 place-items-center rounded-2xl bg-flame-500/10 text-flame-600 dark:text-flame-400 transition-colors group-hover:bg-flame-500 group-hover:text-white">
                     <Icon size={22} />
@@ -76,10 +117,10 @@ export function StudyMechanism({ onPickService }) {
                 </span>
 
                 <h3 className="relative mt-6 text-xl font-extrabold text-ink-900 dark:text-ink-100">
-                  {t(`mechanism.services.${s.id}.title`)}
+                  {s.title}
                 </h3>
                 <p className="relative mt-3 leading-relaxed text-ink-700/85 dark:text-ink-200/85">
-                  {t(`mechanism.services.${s.id}.summary`)}
+                  {s.summary}
                 </p>
 
                 <span className="relative mt-6 inline-flex items-center gap-2 text-sm font-bold text-flame-600 dark:text-flame-400">
@@ -135,8 +176,8 @@ function ServiceModal({ service, onClose, onPick }) {
 
   if (!service) return <AnimatePresence />;
 
-  const id = service.id;
-  const details = t(`mechanism.services.${id}.details`, { returnObjects: true });
+  const id = service.code;
+  const details = Array.isArray(service.details) ? service.details : [];
   const methodologySteps = t('mechanism.methodologySteps', { returnObjects: true });
   const methodologyHighlight = t('mechanism.methodologyHighlight');
   const methodologySub = t('mechanism.methodologyHighlightSub');
@@ -174,26 +215,26 @@ function ServiceModal({ service, onClose, onPick }) {
                 <X size={18} />
               </button>
 
-              <span className="eyebrow">{t(`mechanism.services.${id}.tag`)}</span>
+              <span className="eyebrow">{service.tag}</span>
               <h3 className="mt-4 text-3xl sm:text-4xl font-extrabold text-ink-900 dark:text-ink-100">
-                {t(`mechanism.services.${id}.title`)}
+                {service.title}
               </h3>
               <Ornament className="mt-5 h-3 w-44 text-flame-500/70" />
               <p className="mt-5 leading-relaxed text-ink-700/85 dark:text-ink-200/85">
-                {t(`mechanism.services.${id}.summary`)}
+                {service.summary}
               </p>
             </div>
 
             <div className="grid gap-5 p-7 sm:p-10 pt-7">
               <ModalCard icon={Users} title={t('mechanism.headers.audience')}>
                 <p className="leading-relaxed text-ink-700 dark:text-ink-200">
-                  {t(`mechanism.services.${id}.audience`)}
+                  {service.audience}
                 </p>
               </ModalCard>
 
               <ModalCard icon={Clock} title={t('mechanism.headers.duration')}>
                 <p className="leading-relaxed text-ink-700 dark:text-ink-200">
-                  {t(`mechanism.services.${id}.duration`)}
+                  {service.duration}
                 </p>
               </ModalCard>
 
@@ -208,9 +249,8 @@ function ServiceModal({ service, onClose, onPick }) {
                 </ul>
               </ModalCard>
 
-              {/* Methodology — only on Recorded + Live (per brief: merge here)
-                  Uses a soft fade-in instead of the previous shake/pulse. */}
-              {service.methodology && (
+              {/* Methodology — only when the service has methodology enabled. */}
+              {service.has_methodology && (
                 <ModalCard icon={Repeat} title={t('mechanism.headers.methodology')} accent>
                   <motion.div
                     initial={{ opacity: 0, y: 8 }}

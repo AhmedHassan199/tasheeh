@@ -1,36 +1,58 @@
 import { useTranslation } from 'react-i18next';
-import { Mail, Facebook, Youtube, MessageCircle } from 'lucide-react';
+import { Mail, Facebook, Youtube, Instagram, Twitter, MessageCircle } from 'lucide-react';
 import { Logo } from './Logo.jsx';
 import { OrnamentBoth } from './Ornament.jsx';
+import { useSiteContent } from '../context/SiteContent.jsx';
 
-const socials = [
-  {
-    icon: Facebook,
-    label: 'Facebook',
-    href: 'https://www.facebook.com/share/1CTUb6rj5N/',
-  },
-  {
-    icon: Youtube,
-    label: 'YouTube',
-    href: 'https://youtube.com/@tasheeh_academy?si=PaUAxKQZi8qlpZcP',
-  },
-  {
-    // TikTok glyph (Lucide doesn't ship one, so we render a small SVG inline)
-    icon: TikTokIcon,
-    label: 'TikTok',
-    href: 'https://www.tiktok.com/@tasheeh1?_r=1&_t=ZS-96CWgbfykBM',
-  },
-  {
-    icon: MessageCircle,
-    label: 'WhatsApp',
-    href: 'https://api.whatsapp.com/send?phone=201013727568',
-  },
+const DEFAULT_SOCIALS = {
+  facebook:  'https://www.facebook.com/share/1CTUb6rj5N/',
+  youtube:   'https://youtube.com/@tasheeh_academy?si=PaUAxKQZi8qlpZcP',
+  tiktok:    'https://www.tiktok.com/@tasheeh1?_r=1&_t=ZS-96CWgbfykBM',
+  instagram: '',
+  twitter:   '',
+  whatsapp:  'https://api.whatsapp.com/send?phone=201013727568',
+};
+
+const SOCIAL_META = [
+  { key: 'facebook',  icon: Facebook,    label: 'Facebook'  },
+  { key: 'youtube',   icon: Youtube,     label: 'YouTube'   },
+  { key: 'tiktok',    icon: TikTokIcon,  label: 'TikTok'    },
+  { key: 'instagram', icon: Instagram,   label: 'Instagram' },
+  { key: 'twitter',   icon: Twitter,     label: 'X'         },
+  { key: 'whatsapp',  icon: MessageCircle, label: 'WhatsApp' },
 ];
 
-const EMAIL = 'tasheeh.online@gmail.com';
+const DEFAULT_EMAIL = 'tasheeh.online@gmail.com';
+
+const buildWhatsappUrl = (raw) => {
+  if (!raw) return '';
+  const trimmed = String(raw).trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  const digits = trimmed.replace(/\D+/g, '');
+  return digits ? `https://wa.me/${digits}` : '';
+};
 
 export function Footer() {
   const { t } = useTranslation();
+  const override = useSiteContent('footer');
+  const tagline = override?.tagline || t('footer.tagline');
+  const email   = override?.contactEmail || DEFAULT_EMAIL;
+
+  // ابن مصدر الروابط: إن لم يحفظ الأدمن socials بعد → استخدم الافتراضى.
+  // إن حُفظت socials (حتى لو فارغة لبعض القنوات) → احترم اختياره: قناة فارغة = مخفية.
+  const adminConfigured = !!(override && override.socials && Object.keys(override.socials).length);
+  const source = adminConfigured ? override.socials : DEFAULT_SOCIALS;
+
+  const socials = SOCIAL_META
+    .map((meta) => {
+      let href = source[meta.key] || '';
+      if (meta.key === 'whatsapp') {
+        href = buildWhatsappUrl(href || override?.contactWhatsapp || (adminConfigured ? '' : DEFAULT_SOCIALS.whatsapp));
+      }
+      return href ? { ...meta, href } : null;
+    })
+    .filter(Boolean);
+
   return (
     <footer className="relative isolate overflow-hidden bg-ink-900 text-ink-100">
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8 pt-20 pb-10">
@@ -38,7 +60,7 @@ export function Footer() {
           {/* Brand — wordmark fully opaque per brief */}
           <div className="md:col-span-7">
             <Logo size={56} />
-            <p className="mt-6 max-w-md leading-relaxed text-ink-100">{t('footer.tagline')}</p>
+            <p className="mt-6 max-w-md leading-relaxed text-ink-100">{tagline}</p>
             <OrnamentBoth className="mt-8 h-3 w-72 text-flame-500" />
           </div>
 
@@ -49,11 +71,11 @@ export function Footer() {
             </h4>
 
             <a
-              href={`mailto:${EMAIL}`}
+              href={`mailto:${email}`}
               className="group mt-4 inline-flex items-center gap-3 text-lg font-bold text-ink-100 hover:text-flame-300 transition-colors"
             >
               <Mail size={20} className="text-flame-500 transition-transform group-hover:-rotate-6" />
-              <span dir="ltr" className="underline-offset-4 group-hover:underline">{EMAIL}</span>
+              <span dir="ltr" className="underline-offset-4 group-hover:underline">{email}</span>
             </a>
 
             <div className="mt-8 flex items-center gap-3 md:justify-end">
@@ -61,7 +83,7 @@ export function Footer() {
                 const Icon = s.icon;
                 return (
                   <a
-                    key={s.label}
+                    key={s.key}
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"

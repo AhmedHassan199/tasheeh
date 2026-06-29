@@ -9,6 +9,7 @@ import { StudentReviews } from './components/StudentReviews.jsx';
 import { StudyMechanism } from './components/StudyMechanism.jsx';
 import { RegistrationForm } from './components/RegistrationForm.jsx';
 import { Footer } from './components/Footer.jsx';
+import { SiteContentProvider } from './context/SiteContent.jsx';
 import { useDirection } from './hooks/useDirection.js';
 
 export default function App() {
@@ -19,7 +20,7 @@ export default function App() {
     document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
 
   const handleRegisterWithTeacher = useCallback((teacher) => {
-    formRef.current?.presetTeacher(teacher.id);
+    formRef.current?.presetTeacher(teacher.slug ?? teacher.id);
     requestAnimationFrame(scrollToRegister);
   }, []);
 
@@ -29,19 +30,21 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-paper-texture text-ink-900 dark:text-ink-100">
-      <Navbar />
-      <main>
-        <HeroSection />
-        <InstructorsSection onRegisterWithTeacher={handleRegisterWithTeacher} />
-        <AboutSection />
-        <ExceptionalFeatures />
-        <BeforeAfterSection />
-        <StudentReviews />
-        <StudyMechanism onPickService={handlePickService} />
-        <RegistrationForm ref={formRef} />
-      </main>
-      <Footer />
-    </div>
+    <SiteContentProvider>
+      <div className="min-h-screen bg-paper-texture text-ink-900 dark:text-ink-100">
+        <Navbar />
+        <main>
+          <HeroSection />
+          <InstructorsSection onRegisterWithTeacher={handleRegisterWithTeacher} />
+          <AboutSection />
+          <ExceptionalFeatures />
+          <BeforeAfterSection />
+          <StudentReviews />
+          <StudyMechanism onPickService={handlePickService} />
+          <RegistrationForm ref={formRef} />
+        </main>
+        <Footer />
+      </div>
+    </SiteContentProvider>
   );
 }
