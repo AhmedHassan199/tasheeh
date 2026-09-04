@@ -314,8 +314,19 @@
       "priorExperience":  "Previous experience",
       "uploadSamples":    "Samples of your writing",
       "teacher":          "Choose teacher",
+      "investment":       "Your commitment level",
       "info":             "Your details",
       "review":           "Review"
+    },
+    "investment": {
+      "question": "Which level is closest to your situation right now? Your answer shapes the teacher and track we recommend — it commits you to nothing.",
+      "options": {
+        "A": { "title": "Start with the lightest commitment", "desc": "I want to try it and build up gradually — an experienced teacher, fewer lessons." },
+        "B": { "title": "The balanced track",                 "desc": "Serious guidance at a sensible cost — what most of our students choose." },
+        "C": { "title": "The fastest progress possible",      "desc": "I want the closest guidance in the shortest time; cost isn't my constraint." },
+        "D": { "title": "I'd like your advice",               "desc": "My means are limited right now, and I'd like you to suggest what fits." }
+      },
+      "note": "We don't show prices here because cost varies by country and by the teacher's experience. Once your teacher has reviewed your handwriting sample, you'll receive a personal recommendation with the options that suit you and their prices."
     },
     "filters": {
       "regular": {
@@ -378,9 +389,13 @@
       "no":  { "title": "No — this is my beginning", "desc": "No prerequisites — your journey starts fresh." }
     },
     "uploadSamples": {
-      "question": "Please attach images of your writing samples (up to 6 images).",
-      "cta":      "Click to choose images or drop them here",
-      "hint":     "Supported: JPG · PNG · WEBP — up to 6 images at a reasonable size."
+      "question":      "Write this line in your current handwriting, photograph it, and attach it here:",
+      "sentenceLabel": "The line to write",
+      "sentence":      "بسم الله الرحمن الرحيم",
+      "beginnerNote":  "Never studied calligraphy? Write it exactly the way you write today — that is precisely what we need to see, and where the assessment starts.",
+      "promise":       "From this image your teacher writes you a personal assessment of your level within 24 hours: your strengths, the two things that most need fixing, and how long your progress should take. The assessment is free and yours to keep, even if you don't continue with us.",
+      "cta":           "Click to choose images or drop them here",
+      "hint":          "Supported: JPG · PNG · WEBP — up to 6 images at a reasonable size."
     },
     "ruleErrors": {
       "max-two-scripts":         "Maximum two scripts only.",
@@ -403,6 +418,7 @@
       "arabCountries":      "Arab countries",
       "restCountries":      "Rest of the world",
       "age":                "Age",
+      "birthYear":          "Year of birth",
       "dob":                "Date of birth",
       "day":                "Day",
       "month":              "Month",
@@ -416,7 +432,7 @@
       "phone":            "Invalid phone number",
       "country":          "Pick your country of residence",
       "age":               "Invalid age",
-      "birth":            "Pick day, month, and year of birth",
+      "birth":            "Pick your year of birth",
       "scriptsRequired":  "Pick at least one script",
       "samplesRequired":  "Please attach at least one sample of your writing",
       "submitFailed":     "Could not submit — please try again."
@@ -428,10 +444,16 @@
       "scripts":          "Scripts",
       "lessonsPerMonth":  "Lessons / month",
       "priorExperience":  "Prior experience",
-      "teacher":          "Teacher"
+      "teacher":          "Teacher",
+      "investment":       "Commitment level"
+    },
+    "success": {
+      "recommendationLabel": "Your suggested track",
+      "nextTitle":           "Next: your handwriting assessment",
+      "nextBody":            "Your teacher will personally review your sample and send a written assessment of your level within 24 hours to {{email}}: your strengths, what most needs fixing, how long your progress should take — and the options that suit you. The assessment is free and yours to keep, even if you don't continue with us."
     },
     "successTitle":      "Your application is in",
-    "successBody":       "Welcome {{name}} — we'll reach out within 24 hours at {{email}} to schedule your first lesson.",
+    "successBody":       "Welcome {{name}} — we've received your request and started reviewing it.",
     "anotherSubmission": "Submit another application",
     "agreement":         "By submitting, you agree to Tasheeh Academy's privacy policy."
   },

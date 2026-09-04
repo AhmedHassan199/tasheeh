@@ -57,8 +57,13 @@ function buildSteps(v) {
   s.push('lessonsPerMonth');
   if (v.scripts.length >= 2) s.push('lessonsPerScript');
   s.push('priorExperience');
-  if (v.priorExperience === 'yes') s.push('uploadSamples');
+  // نطلب نموذجًا من الجميع — المبتدئ أيضًا. بدون نموذج لا يوجد تقييم شخصى،
+  // وبدون التقييم الشخصى يتحوّل ردّنا إلى قائمة مزايا وسعر.
+  s.push('uploadSamples');
   if (v.track === 'recorded' || v.track === 'live') s.push('teacher');
+  // مستوى الالتزام — نسأل عن المدى المريح بالأسماء لا بالأرقام، فيختار كلٌّ
+  // بابه قبل أن يرى سعرًا، ويبقى تسعير الدول محميًا من العرض العلنى.
+  s.push('investment');
   s.push('info', 'review');
 
   return s;
@@ -74,15 +79,14 @@ const initialValues = {
   lessonsPerScript: {}, // { scriptId: '2'|'4'|'8' }
   priorExperience: '',  // 'yes' | 'no'
   priorSamples: [],     // [{ name, size, dataUrl }]
+  path: '',             // A | B | C | D — مستوى الالتزام المالى (يُحفظ فى lead.path)
   teacher: '',
   name: '',
   email: '',
   phoneCode: '+20',
   phoneNumber: '',
   country: '',          // ISO2
-  birthDay: '',
-  birthMonth: '',
-  birthYear: '',
+  birthYear: '',        // السنة وحدها — العمر هو كل ما نحتاجه
 };
 
 export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref) {
@@ -112,7 +116,8 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
       };
       setValues(next);
       const nextSteps = buildSteps(next);
-      setStepIdx(nextSteps.indexOf('info'));
+      // نقف عند «مستوى الالتزام» لا عند البيانات — وإلا فقدنا أهم حقل فى الفانل
+      setStepIdx(nextSteps.indexOf('investment'));
     },
     presetService(serviceId) {
       if (!TRACK_IDS.includes(serviceId)) return;
@@ -162,13 +167,14 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
       lessonsPerScript: values.lessonsPerScript,
       priorExperience: values.priorExperience,
       priorSamples: values.priorSamples.map((s) => ({ name: s.name, size: s.size, dataUrl: s.dataUrl })),
+      path: values.path,
       teacher: values.teacher,
       name: values.name,
       email: values.email,
       phone: `${values.phoneCode} ${values.phoneNumber}`.trim(),
       country: country ? country.ar : values.country,
       countryCode: values.country,
-      birth: `${values.birthYear}-${values.birthMonth}-${values.birthDay}`,
+      birthYear: values.birthYear,
       submittedAt: new Date().toISOString(),
       lang: document.documentElement.lang,
     };
@@ -187,6 +193,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
           filter:       payload.filter,
           goal:         payload.goal,
           track:        payload.track,
+          path:         payload.path,
           scripts:      payload.scripts,
           teacher_slug: payload.teacher,
           age:          computeAge(values.birthYear),
@@ -198,7 +205,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
             priorExperience:   payload.priorExperience,
             priorSamples:      payload.priorSamples,
             countryCode:       payload.countryCode,
-            birth:             payload.birth,
+            birthYear:         payload.birthYear,
             submittedAt:       payload.submittedAt,
           },
         };
@@ -266,7 +273,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
             <div className="relative rounded-3xl sm:rounded-[32px] border border-ink-900/10 dark:border-ink-100/10 bg-paper/90 dark:bg-[#150B07]/85 p-5 sm:p-7 lg:p-9 shadow-soft backdrop-blur-md">
               <AnimatePresence mode="wait">
                 {status === 'done' ? (
-                  <Success key="success" name={values.name} email={values.email} reset={reset} />
+                  <Success key="success" values={values} reset={reset} />
                 ) : (
                   <motion.div
                     key={`step-${currentStep}`}
@@ -308,6 +315,7 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
                       {currentStep === 'priorExperience'  && <StepPriorExperience  values={values} update={update} />}
                       {currentStep === 'uploadSamples'    && <StepUploadSamples    values={values} update={update} error={errors.priorSamples} />}
                       {currentStep === 'teacher'          && <StepTeacher          values={values} update={update} />}
+                      {currentStep === 'investment'       && <StepInvestment       values={values} update={update} />}
                       {currentStep === 'info'             && <StepInfo             values={values} update={update} errors={errors} />}
                       {currentStep === 'review'           && <StepReview           values={values} />}
                     </div>
@@ -391,9 +399,9 @@ function canAdvance(step, v) {
     case 'priorExperience':  return !!v.priorExperience;
     case 'uploadSamples':    return v.priorSamples.length > 0;
     case 'teacher':          return !!v.teacher;
+    case 'investment':       return !!v.path;
     case 'info':
-      return v.name && v.email && v.phoneNumber && v.country
-          && v.birthDay && v.birthMonth && v.birthYear;
+      return v.name && v.email && v.phoneNumber && v.country && v.birthYear;
     case 'review':           return true;
     default:                 return false;
   }
@@ -406,7 +414,7 @@ function validateStep(step, v, t) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email || '')) e.email = t('register.errors.email');
     if (!/^[\d\s-]{6,}$/.test(v.phoneNumber || '')) e.phone = t('register.errors.phone');
     if (!v.country) e.country = t('register.errors.country');
-    if (!v.birthDay || !v.birthMonth || !v.birthYear) e.birth = t('register.errors.birth');
+    if (!v.birthYear) e.birth = t('register.errors.birth');
   }
   if (step === 'scripts' && v.scripts.length === 0) e.scripts = t('register.errors.scriptsRequired');
   if (step === 'uploadSamples' && v.priorSamples.length === 0) e.priorSamples = t('register.errors.samplesRequired');
@@ -753,7 +761,7 @@ function StepPriorExperience({ values, update }) {
           title={t('register.priorExperience.no.title')}
           desc={t('register.priorExperience.no.desc')}
           active={values.priorExperience === 'no'}
-          onClick={() => update({ priorExperience: 'no', priorSamples: [] })}
+          onClick={() => update({ priorExperience: 'no' })}
         />
       </div>
     </>
@@ -786,6 +794,22 @@ function StepUploadSamples({ values, update, error }) {
         {t('register.uploadSamples.question')}
       </p>
 
+      {/* جملة موحّدة يكتبها الجميع — تجعل النماذج قابلة للمقارنة وتبنى أرشيف قبل/بعد بمرجع ثابت */}
+      <div className="mt-4 rounded-2xl border border-flame-500/40 bg-flame-500/5 px-5 py-4 text-center">
+        <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-500 dark:text-ink-300">
+          {t('register.uploadSamples.sentenceLabel')}
+        </p>
+        <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-flame-600 dark:text-flame-400 leading-snug">
+          {t('register.uploadSamples.sentence')}
+        </p>
+      </div>
+
+      {values.priorExperience === 'no' && (
+        <InfoBanner icon={Sprout}>
+          <p>{t('register.uploadSamples.beginnerNote')}</p>
+        </InfoBanner>
+      )}
+
       <label className="mt-5 block">
         <input
           type="file"
@@ -804,6 +828,11 @@ function StepUploadSamples({ values, update, error }) {
       <p className="mt-2 text-xs text-ink-600/80 dark:text-ink-300/70">
         {t('register.uploadSamples.hint')}
       </p>
+
+      {/* الوعد بالمقابل — يُوضع عند أعلى نقطة احتكاك ليتحوّل الطلب إلى تبادل */}
+      <InfoBanner icon={Sparkles}>
+        <p>{t('register.uploadSamples.promise')}</p>
+      </InfoBanner>
 
       {values.priorSamples.length > 0 && (
         <div className="mt-5 grid grid-cols-3 gap-3">
@@ -880,6 +909,51 @@ function StepTeacher({ values, update }) {
   );
 }
 
+/**
+ * مستوى الالتزام — أربعة أبواب بالأسماء لا بالأرقام.
+ *
+ * لا يُعرض رقم واحد هنا: تسعير كل دولة يبقى محميًا، ويختار الطالب مداه
+ * المريح قبل أن يرى سعرًا فيُبنى العرض على اختياره هو. والخيار الرابع
+ * مقصود: يمنح من لا يقدر مخرجًا كريمًا قبل أن يصله السعر فيصمت.
+ */
+function StepInvestment({ values, update }) {
+  const { t } = useTranslation();
+  const options = [
+    { id: 'A', icon: Sprout },
+    { id: 'B', icon: Award },
+    { id: 'C', icon: Rocket },
+    { id: 'D', icon: Heart },
+  ];
+
+  return (
+    <>
+      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">
+        {t('register.steps.investment')}
+      </h3>
+      <p className="mt-3 text-base leading-relaxed text-ink-700 dark:text-ink-200">
+        {t('register.investment.question')}
+      </p>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {options.map((o) => (
+          <ChoiceCard
+            key={o.id}
+            icon={o.icon}
+            title={t(`register.investment.options.${o.id}.title`)}
+            desc={t(`register.investment.options.${o.id}.desc`)}
+            active={values.path === o.id}
+            onClick={() => update({ path: o.id })}
+          />
+        ))}
+      </div>
+
+      <InfoBanner>
+        <p>{t('register.investment.note')}</p>
+      </InfoBanner>
+    </>
+  );
+}
+
 function StepInfo({ values, update, errors }) {
   const { t, i18n } = useTranslation();
   const isAr = (i18n.language || 'ar').startsWith('ar');
@@ -887,14 +961,9 @@ function StepInfo({ values, update, errors }) {
   // سنوات 1960 → 2026 تنازليًا (الأحدث أعلى القائمة)
   const years = useMemo(() => {
     const arr = [];
-    for (let y = 2026; y >= 1960; y--) arr.push(y);
+    for (let y = new Date().getFullYear(); y >= 1960; y--) arr.push(y);
     return arr;
   }, []);
-  const months = [
-    'يناير', 'فبراير', 'مارس', 'إبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-  ];
-  const days = useMemo(() => Array.from({ length: 31 }, (_, i) => i + 1), []);
 
   return (
     <>
@@ -944,19 +1013,17 @@ function StepInfo({ values, update, errors }) {
           {errors.country && <span className="mt-1.5 inline-block text-xs text-flame-600">{errors.country}</span>}
         </label>
 
-        {/* تاريخ الميلاد — اليوم / الشهر / السنة (١٩٦٠–٢٠٢٦) */}
+        {/* سنة الميلاد وحدها — العمر هو كل ما نستخدمه، واليوم والشهر احتكاك بلا مقابل */}
         <div className="sm:col-span-2">
           <span className="block text-sm font-bold text-ink-700 dark:text-ink-200 mb-2">
-            {t('register.fields.dob')}
+            {t('register.fields.birthYear')}
           </span>
           <div
-            className={`grid grid-cols-3 gap-2 rounded-2xl border bg-paper/80 dark:bg-[#1E120A]/80 px-3 py-1 transition-colors ${
-              errors.birth ? 'border-flame-500/70' : 'border-ink-900/10 dark:border-ink-100/10'
+            className={`rounded-2xl border bg-paper/80 dark:bg-[#1E120A]/80 px-3 py-1 transition-colors ${
+              errors.birth ? 'border-flame-500/70' : 'border-ink-900/10 dark:border-ink-100/10 focus-within:border-flame-500'
             }`}
           >
-            <DateSelect icon={Calendar} value={values.birthDay}   onChange={(v) => update({ birthDay: v })}   options={days}   placeholder={t('register.fields.day')} />
-            <DateSelect                value={values.birthMonth} onChange={(v) => update({ birthMonth: v })} options={months.map((m, i) => ({ value: i + 1, label: m }))} placeholder={t('register.fields.month')} />
-            <DateSelect                value={values.birthYear}  onChange={(v) => update({ birthYear: v })}  options={years} placeholder={t('register.fields.year')} />
+            <DateSelect icon={Calendar} value={values.birthYear} onChange={(v) => update({ birthYear: v })} options={years} placeholder={t('register.fields.year')} />
           </div>
           {errors.birth && <span className="mt-1.5 inline-block text-xs text-flame-600">{errors.birth}</span>}
         </div>
@@ -1034,6 +1101,10 @@ function StepReview({ values }) {
     (values.track === 'recorded' || values.track === 'live') && {
       label: t('register.summary.teacher'), value: teacherName,
     },
+    values.path && {
+      label: t('register.summary.investment'),
+      value: t(`register.investment.options.${values.path}.title`),
+    },
     c && { label: t('register.fields.residenceCountry'), value: isAr ? c.ar : c.en },
   ].filter(Boolean);
 
@@ -1058,30 +1129,88 @@ function StepReview({ values }) {
   );
 }
 
-function Success({ name, email, reset }) {
+/**
+ * شاشة النجاح — ترشيح لا شكر.
+ *
+ * كانت تقول «شكرًا، سنتواصل خلال ٢٤ ساعة» فينتهى الحماس عند لا شىء.
+ * صارت تُسمّى المسار المقترح والمعلم المرشَّح، وتَعِد بمُخرَج محدد
+ * (تقييم الخط) بموعد محدد — فيتحوّل الانتظار من فتور إلى ترقّب،
+ * ويصل السعر لاحقًا كتوصية مبنية على هذا الترشيح لا كمفاجأة.
+ */
+function Success({ values, reset }) {
   const { t } = useTranslation();
+
+  const trackName = values.track ? t(`register.tracks.${values.track}.title`) : null;
+  const teacherName = values.teacher
+    ? t(`teachers.list.${values.teacher}.namePlain`)
+    : t('register.fields.teacherAuto');
+  const scriptNames = values.scripts.map((s) => t(`scripts.${s}`)).join(' + ');
+
+  const rows = [
+    trackName   && { label: t('register.summary.track'),   value: trackName },
+    scriptNames && { label: t('register.summary.scripts'), value: scriptNames },
+    { label: t('register.summary.teacher'), value: teacherName },
+  ].filter(Boolean);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.45 }}
-      className="text-center py-6"
+      className="py-4"
     >
-      <motion.span
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-        className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-flame-500 text-white shadow-flame"
-      >
-        <Check size={36} />
-      </motion.span>
-      <h3 className="mt-6 text-3xl font-extrabold text-ink-900 dark:text-ink-100">{t('register.successTitle')}</h3>
-      <p className="mt-3 mx-auto max-w-md leading-relaxed text-ink-700 dark:text-ink-200">
-        {t('register.successBody', { name, email })}
-      </p>
-      <button type="button" onClick={reset} className="btn-ghost mt-8">
-        {t('register.anotherSubmission')}
-      </button>
+      <div className="text-center">
+        <motion.span
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+          className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-flame-500 text-white shadow-flame"
+        >
+          <Check size={36} />
+        </motion.span>
+        <h3 className="mt-6 text-3xl font-extrabold text-ink-900 dark:text-ink-100">
+          {t('register.successTitle')}
+        </h3>
+        <p className="mt-3 mx-auto max-w-md leading-relaxed text-ink-700 dark:text-ink-200">
+          {t('register.successBody', { name: values.name })}
+        </p>
+      </div>
+
+      {/* الترشيح — يُمهّد للسعر قبل وصوله */}
+      <div className="mt-8 rounded-2xl border border-flame-500/30 bg-flame-500/5 p-5">
+        <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-flame-600 dark:text-flame-400">
+          {t('register.success.recommendationLabel')}
+        </p>
+        <ul className="mt-3 divide-y divide-ink-900/10 dark:divide-ink-100/10">
+          {rows.map((r) => (
+            <li key={r.label} className="flex items-center justify-between gap-3 py-2.5">
+              <span className="text-sm font-bold text-ink-600 dark:text-ink-300">{r.label}</span>
+              <span className="text-sm font-extrabold text-ink-900 dark:text-ink-100 text-end">{r.value}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* الوعد بموعد ومُخرَج محددين */}
+      <div className="mt-4 flex items-start gap-3 rounded-2xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08] p-5">
+        <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-flame-500 text-white">
+          <Sparkles size={17} />
+        </span>
+        <div>
+          <p className="font-extrabold text-ink-900 dark:text-ink-100">
+            {t('register.success.nextTitle')}
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-ink-700 dark:text-ink-200">
+            {t('register.success.nextBody', { email: values.email })}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-7 text-center">
+        <button type="button" onClick={reset} className="btn-ghost">
+          {t('register.anotherSubmission')}
+        </button>
+      </div>
     </motion.div>
   );
 }
