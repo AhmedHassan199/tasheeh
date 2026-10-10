@@ -248,6 +248,8 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
           path:         payload.path,
           scripts:      payload.scripts,
           plan:         payload.plan,
+          // Honeypot: يبقى فارغًا دائمًا من المتصفح؛ امتلاؤه علامة إرسال آلى
+          website:      '',
           age:          computeAge(values.birthYear),
           // الحقول الإضافية يحفظها الـ service فى meta JSON على الـ lead.
           meta: {
