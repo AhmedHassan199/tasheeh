@@ -308,12 +308,10 @@
       "trackChoice":      "Correction mode",
       "commitment":       "Your weekly commitment",
       "track":            "Pick a study track",
-      "scripts":          "Pick scripts",
-      "lessonsPerMonth":  "Lessons per month",
-      "lessonsPerScript": "Lessons per script",
+      "scripts":          "Pick your script",
+      "plan":             "Subscription plan",
       "priorExperience":  "Previous experience",
       "uploadSamples":    "Samples of your writing",
-      "teacher":          "Choose teacher",
       "investment":       "Your commitment level",
       "info":             "Your details",
       "review":           "Review"
@@ -374,6 +372,18 @@
     },
     "scriptsHint": "Pick one or two compatible scripts.",
     "scriptsHintFoundation": "In the Foundation track we focus on a single script to master the basics.",
+    "scriptsHintSingle": "One script only — focusing on a single script gets you to mastery faster, and you can add another once your hand settles on the first.",
+    "plan": {
+      "question": "Choose how long you'd like to subscribe. Every plan runs at four lessons a month, and the longer the term the larger the discount.",
+      "duration": "{{months}} months · {{sessions}} lessons",
+      "priceNote": "The final figure depends on your country and the tier of the teacher we match you with, so it reaches you in the personal reply once your teacher has reviewed your handwriting sample.",
+      "options": {
+        "monthly":   { "title": "Monthly",    "badge": "",            "value": "Full flexibility and a first taste of the curriculum and the teacher's corrections." },
+        "quarterly": { "title": "Quarterly",  "badge": "Most chosen", "value": "The popular choice for completing the script's letterforms in full." },
+        "biannual":  { "title": "Six months", "badge": "Great value", "value": "A full move from letterforms into joins and compositions." },
+        "annual":    { "title": "Annual",     "badge": "Best value",  "value": "The road to mastery and an ijaza in the script." }
+      }
+    },
     "lessonsCount": "{{count}} lessons / month",
     "selected": "Selected",
     "lessonsPerMonth": {
@@ -389,10 +399,8 @@
       "no":  { "title": "No — this is my beginning", "desc": "No prerequisites — your journey starts fresh." }
     },
     "uploadSamples": {
-      "question":      "Write this line in your current handwriting, photograph it, and attach it here:",
-      "sentenceLabel": "The line to write",
-      "sentence":      "بسم الله الرحمن الرحيم",
-      "beginnerNote":  "Never studied calligraphy? Write it exactly the way you write today — that is precisely what we need to see, and where the assessment starts.",
+      "question":      "Attach a photo of your writing — earlier practice sheets, or any lines in your current hand with an ordinary pen or a reed.",
+      "beginnerNote":  "Never studied calligraphy? Write any couple of lines exactly the way you write today — that is precisely what we need to see, and where the assessment starts.",
       "promise":       "From this image your teacher writes you a personal assessment of your level within 24 hours: your strengths, the two things that most need fixing, and how long your progress should take. The assessment is free and yours to keep, even if you don't continue with us.",
       "cta":           "Click to choose images or drop them here",
       "hint":          "Supported: JPG · PNG · WEBP — up to 6 images at a reasonable size."
@@ -441,8 +449,8 @@
       "filter":           "Interest",
       "goal":             "Goal",
       "track":            "Study track",
-      "scripts":          "Scripts",
-      "lessonsPerMonth":  "Lessons / month",
+      "scripts":          "Script",
+      "plan":             "Subscription plan",
       "priorExperience":  "Prior experience",
       "teacher":          "Teacher",
       "investment":       "Commitment level"

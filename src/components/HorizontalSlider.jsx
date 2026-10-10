@@ -12,7 +12,14 @@ export function HorizontalSlider({ children, className = '', itemClassName = '' 
     <div
       className={
         // Mobile: horizontal scroll with snap points.
-        'flex snap-x snap-mandatory overflow-x-auto gap-4 pb-4 -mx-5 px-5 ' +
+        //
+        // `proximity` not `mandatory`: mandatory fought the reader's thumb and
+        // made vertical scrolling feel blocked on the "about" and "how we
+        // teach" sections. `touch-action: pan-x pan-y` keeps vertical panning
+        // available over the cards, and `overscroll-x-contain` stops the swipe
+        // from leaking out to the page once the row ends.
+        'flex snap-x snap-proximity overflow-x-auto overscroll-x-contain gap-4 pb-4 -mx-5 px-5 ' +
+        '[touch-action:pan-x_pan-y] [-webkit-overflow-scrolling:touch] ' +
         '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden ' +
         // Desktop overrides supplied by the parent.
         className

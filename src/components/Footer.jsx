@@ -59,7 +59,7 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-12 md:items-start">
           {/* Brand — wordmark fully opaque per brief */}
           <div className="md:col-span-7">
-            <Logo size={56} />
+            <Logo size={56} onDark />
             <p className="mt-6 max-w-md leading-relaxed text-ink-100">{tagline}</p>
             <OrnamentBoth className="mt-8 h-3 w-72 text-flame-500" />
           </div>

@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { teachers as TEACHERS } from '../data/teachers.js';
 import { ARAB_COUNTRIES, REST_COUNTRIES, findCountry } from '../data/countries.js';
-import { canAddScript, teachersForScripts, visibleScriptsFor } from '../lib/registrationRules.js';
+import { visibleScriptsFor } from '../lib/registrationRules.js';
 import { Ornament } from './Ornament.jsx';
 import { RichText } from './RichText.jsx';
 import { PhoneField } from './PhoneField.jsx';
@@ -53,16 +53,21 @@ function buildSteps(v) {
   }
   // filter === 'regular' ⇒ المسار تأسيس (يُضبط فى الـ pick).
 
+  // خط واحد فقط (قرار أكتوبر ٢٠٢٦): تركيز التعلّم، وإلغاء خطوة تجزئة الحصص.
   s.push('scripts');
-  s.push('lessonsPerMonth');
-  if (v.scripts.length >= 2) s.push('lessonsPerScript');
+  // عدد الحصص لم يعد سؤالًا مستقلًا — الباقة هى التى تحدده (٤/١٢/٢٤/٤٨).
+  s.push('plan');
   s.push('priorExperience');
   // نطلب نموذجًا من الجميع — المبتدئ أيضًا. بدون نموذج لا يوجد تقييم شخصى،
   // وبدون التقييم الشخصى يتحوّل ردّنا إلى قائمة مزايا وسعر.
   s.push('uploadSamples');
-  if (v.track === 'recorded' || v.track === 'live') s.push('teacher');
+  // لا خطوة لاختيار الأستاذ (قرار أكتوبر ٢٠٢٦): المعلمون يُعرضون على الموقع
+  // كهيبة، والإدارة هى من توزّع الطالب على المعلم وفق مستواه وميزانيته.
+  // وهذا يُسقط أيضًا باب تجمّد زر «التالي» حين لا يطابق أى معلم الفلتر.
+  //
   // مستوى الالتزام — نسأل عن المدى المريح بالأسماء لا بالأرقام، فيختار كلٌّ
   // بابه قبل أن يرى سعرًا، ويبقى تسعير الدول محميًا من العرض العلنى.
+  // وهو المدخل الذى تبنى عليه الإدارة قرار المعلم والسعر.
   s.push('investment');
   s.push('info', 'review');
 
@@ -74,13 +79,12 @@ const initialValues = {
   goal: '',             // GOALS[].id
   hobbyDuration: '',    // 'long' | 'short'
   track: '',            // TRACK_IDS
-  scripts: [],
-  lessonsPerMonth: '',  // '2' | '4' | '8'
-  lessonsPerScript: {}, // { scriptId: '2'|'4'|'8' }
+  scripts: [],          // خط واحد فقط — تبقى مصفوفة لتوافق الـ API
+  plan: '',             // monthly | quarterly | biannual | annual
   priorExperience: '',  // 'yes' | 'no'
   priorSamples: [],     // [{ name, size, dataUrl }]
   path: '',             // A | B | C | D — مستوى الالتزام المالى (يُحفظ فى lead.path)
-  teacher: '',
+  preferredTeacher: '', // تفضيل لا اختيار — الإدارة هى من توزّع
   name: '',
   email: '',
   phoneCode: '+20',
@@ -98,12 +102,14 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
 
   const steps = useMemo(
     () => buildSteps(values),
-    [values.filter, values.goal, values.hobbyDuration, values.track, values.scripts.length, values.priorExperience],
+    [values.filter, values.goal, values.hobbyDuration, values.track, values.priorExperience],
   );
   const currentStep = steps[stepIdx];
   const totalSteps = steps.length;
 
   useImperativeHandle(ref, () => ({
+    // الطالب لم يعد يختار أستاذه؛ لكن قدومه من بطاقة أستاذ بعينه تفضيلٌ نُبلّغ
+    // به الإدارة فى الـ meta لتأخذه فى الاعتبار عند التوزيع — دون إلزام.
     presetTeacher(teacherId) {
       const teacher = TEACHERS.find((tt) => tt.id === teacherId);
       const next = {
@@ -112,12 +118,11 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
         goal: 'master',
         track: values.track || 'recorded',
         scripts: values.scripts.length ? values.scripts : (teacher?.scripts.slice(0, 1) ?? []),
-        teacher: teacherId,
+        preferredTeacher: teacherId,
       };
       setValues(next);
       const nextSteps = buildSteps(next);
-      // نقف عند «مستوى الالتزام» لا عند البيانات — وإلا فقدنا أهم حقل فى الفانل
-      setStepIdx(nextSteps.indexOf('investment'));
+      setStepIdx(nextSteps.indexOf('plan'));
     },
     presetService(serviceId) {
       if (!TRACK_IDS.includes(serviceId)) return;
@@ -133,14 +138,62 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
 
   const update = (patch) => setValues((v) => ({ ...v, ...patch }));
 
+  // ── التمرير بعد تغيّر الخطوة ──────────────────────────────────────────────
+  // كان scrollIntoView يُنادى مباشرة بعد setStepIdx، أى قبل رسم الخطوة الجديدة،
+  // فيُحسب الموضع على ارتفاع الخطوة القديمة وتقفز الصفحة إلى الفوتر. تنفيذه فى
+  // useEffect يتابع الخطوة يضمن أن الرسم اكتمل. ونتجاهل أول تحميل للصفحة حتى
+  // لا نقفز بالزائر إلى الاستمارة قبل أن يطلبها.
+  const firstRenderRef = useRef(true);
+  useEffect(() => {
+    if (firstRenderRef.current) {
+      firstRenderRef.current = false;
+      return;
+    }
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('register')?.scrollIntoView({
+      behavior: prefersReduced ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  }, [stepIdx]);
+
+  // ── زر الرجوع فى الهاتف ───────────────────────────────────────────────────
+  // الخطوات كانت تُدار بـ state محلى فقط، فزر الرجوع يغلق الصفحة بدل أن يرجع
+  // خطوة. نربط كل تقدّم بإدخال فى سجل المتصفح، ونستمع لـ popstate للرجوع.
+  useEffect(() => {
+    const onPop = (e) => {
+      const target = e.state?.tasheehStep;
+      if (typeof target === 'number') {
+        setErrors({});
+        setStepIdx(target);
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   function next() {
     const errs = validateStep(currentStep, values, t);
     setErrors(errs);
     if (Object.keys(errs).length) return;
-    setStepIdx((i) => Math.min(steps.length - 1, i + 1));
+    setStepIdx((i) => {
+      const nextIdx = Math.min(steps.length - 1, i + 1);
+      if (nextIdx !== i) {
+        // أول خطوة تستبدل الحالة بدل دفع إدخال مكرر
+        if (i === 0 && !window.history.state?.tasheehStep) {
+          window.history.replaceState({ tasheehStep: 0 }, '');
+        }
+        window.history.pushState({ tasheehStep: nextIdx }, '');
+      }
+      return nextIdx;
+    });
   }
   function back() {
     setErrors({});
+    // نمرّ عبر سجل المتصفح ليبقى زر الرجوع متسقًا مع زر «السابق»
+    if (window.history.state?.tasheehStep > 0) {
+      window.history.back();
+      return;
+    }
     setStepIdx((i) => Math.max(0, i - 1));
   }
   function reset() {
@@ -163,12 +216,11 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
       hobbyDuration: values.hobbyDuration,
       track: values.track,
       scripts: values.scripts,
-      lessonsPerMonth: values.lessonsPerMonth,
-      lessonsPerScript: values.lessonsPerScript,
+      plan: values.plan,
       priorExperience: values.priorExperience,
       priorSamples: values.priorSamples.map((s) => ({ name: s.name, size: s.size, dataUrl: s.dataUrl })),
       path: values.path,
-      teacher: values.teacher,
+      preferredTeacher: values.preferredTeacher,
       name: values.name,
       email: values.email,
       phone: `${values.phoneCode} ${values.phoneNumber}`.trim(),
@@ -195,13 +247,12 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
           track:        payload.track,
           path:         payload.path,
           scripts:      payload.scripts,
-          teacher_slug: payload.teacher,
+          plan:         payload.plan,
           age:          computeAge(values.birthYear),
           // الحقول الإضافية يحفظها الـ service فى meta JSON على الـ lead.
           meta: {
             hobbyDuration:     payload.hobbyDuration,
-            lessonsPerMonth:   payload.lessonsPerMonth,
-            lessonsPerScript:  payload.lessonsPerScript,
+            preferredTeacher:  payload.preferredTeacher,
             priorExperience:   payload.priorExperience,
             priorSamples:      payload.priorSamples,
             countryCode:       payload.countryCode,
@@ -227,7 +278,8 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
   }
 
   return (
-    <section id="register" className="relative overflow-hidden section-y bg-paper-texture">
+    // scroll-mt يمنع اختفاء أعلى القسم خلف الهيدر الثابت عند التمرير إليه
+    <section id="register" className="relative overflow-hidden section-y bg-paper-texture scroll-mt-24">
       <div aria-hidden className="absolute inset-0 -z-10 bg-radial-flame opacity-60" />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
@@ -310,11 +362,9 @@ export const RegistrationForm = forwardRef(function RegistrationForm(_props, ref
                       {currentStep === 'hobbyDuration'    && <StepHobbyDuration    values={values} update={update} />}
                       {currentStep === 'trackChoice'      && <StepTrackChoice      values={values} update={update} />}
                       {currentStep === 'scripts'          && <StepScripts          values={values} update={update} error={errors.scripts} />}
-                      {currentStep === 'lessonsPerMonth'  && <StepLessonsPerMonth  values={values} update={update} />}
-                      {currentStep === 'lessonsPerScript' && <StepLessonsPerScript values={values} update={update} />}
+                      {currentStep === 'plan'             && <StepPlan             values={values} update={update} />}
                       {currentStep === 'priorExperience'  && <StepPriorExperience  values={values} update={update} />}
                       {currentStep === 'uploadSamples'    && <StepUploadSamples    values={values} update={update} error={errors.priorSamples} />}
-                      {currentStep === 'teacher'          && <StepTeacher          values={values} update={update} />}
                       {currentStep === 'investment'       && <StepInvestment       values={values} update={update} />}
                       {currentStep === 'info'             && <StepInfo             values={values} update={update} errors={errors} />}
                       {currentStep === 'review'           && <StepReview           values={values} />}
@@ -393,12 +443,10 @@ function canAdvance(step, v) {
     case 'goal':             return !!v.goal;
     case 'hobbyDuration':    return !!v.hobbyDuration;
     case 'trackChoice':      return v.track === 'recorded' || v.track === 'live';
-    case 'scripts':          return v.scripts.length > 0;
-    case 'lessonsPerMonth':  return !!v.lessonsPerMonth;
-    case 'lessonsPerScript': return v.scripts.every((s) => !!v.lessonsPerScript[s]);
+    case 'scripts':          return v.scripts.length === 1;
+    case 'plan':             return !!v.plan;
     case 'priorExperience':  return !!v.priorExperience;
     case 'uploadSamples':    return v.priorSamples.length > 0;
-    case 'teacher':          return !!v.teacher;
     case 'investment':       return !!v.path;
     case 'info':
       return v.name && v.email && v.phoneNumber && v.country && v.birthYear;
@@ -464,9 +512,9 @@ function InfoBanner({ children, icon: Icon = Lightbulb }) {
 function StepFilter({ values, update }) {
   const { t } = useTranslation();
   const pickRegular = () =>
-    update({ filter: 'regular', track: 'foundation', goal: 'scratch', scripts: [], teacher: '', hobbyDuration: '' });
+    update({ filter: 'regular', track: 'foundation', goal: 'scratch', scripts: [], hobbyDuration: '' });
   const pickArt = () =>
-    update({ filter: 'art', track: '', goal: '', scripts: [], teacher: '', hobbyDuration: '' });
+    update({ filter: 'art', track: '', goal: '', scripts: [], hobbyDuration: '' });
 
   return (
     <>
@@ -494,10 +542,10 @@ function StepGoal({ values, update }) {
   const { t } = useTranslation();
   const pick = (g) => {
     // mapping → track
-    if (g.id === 'scratch')   update({ goal: g.id, track: 'foundation', hobbyDuration: '', scripts: [], teacher: '' });
-    else if (g.id === 'intensive') update({ goal: g.id, track: 'intensive', hobbyDuration: '', scripts: [], teacher: '' });
-    else if (g.id === 'hobby')     update({ goal: g.id, track: '', hobbyDuration: '', scripts: [], teacher: '' });
-    else if (g.id === 'master')    update({ goal: g.id, track: '', hobbyDuration: '', scripts: [], teacher: '' });
+    if (g.id === 'scratch')   update({ goal: g.id, track: 'foundation', hobbyDuration: '', scripts: [] });
+    else if (g.id === 'intensive') update({ goal: g.id, track: 'intensive', hobbyDuration: '', scripts: [] });
+    else if (g.id === 'hobby')     update({ goal: g.id, track: '', hobbyDuration: '', scripts: [] });
+    else if (g.id === 'master')    update({ goal: g.id, track: '', hobbyDuration: '', scripts: [] });
   };
   return (
     <>
@@ -530,14 +578,14 @@ function StepHobbyDuration({ values, update }) {
           title={t('register.hobbyDuration.long.title')}
           desc={t('register.hobbyDuration.long.desc')}
           active={values.hobbyDuration === 'long'}
-          onClick={() => update({ hobbyDuration: 'long', track: '', teacher: '' })}
+          onClick={() => update({ hobbyDuration: 'long', track: '' })}
         />
         <ChoiceCard
           icon={Rocket}
           title={t('register.hobbyDuration.short.title')}
           desc={t('register.hobbyDuration.short.desc')}
           active={values.hobbyDuration === 'short'}
-          onClick={() => update({ hobbyDuration: 'short', track: 'intensive', teacher: '' })}
+          onClick={() => update({ hobbyDuration: 'short', track: 'intensive' })}
         />
       </div>
     </>
@@ -558,14 +606,14 @@ function StepTrackChoice({ values, update }) {
           title={t('register.tracks.live.title')}
           desc={t('register.trackChoice.live.desc')}
           active={values.track === 'live'}
-          onClick={() => update({ track: 'live', teacher: '' })}
+          onClick={() => update({ track: 'live' })}
         />
         <ChoiceCard
           icon={Mic}
           title={t('register.tracks.recorded.title')}
           desc={t('register.trackChoice.recorded.desc')}
           active={values.track === 'recorded'}
-          onClick={() => update({ track: 'recorded', teacher: '' })}
+          onClick={() => update({ track: 'recorded' })}
         />
       </div>
       <InfoBanner>
@@ -575,57 +623,41 @@ function StepTrackChoice({ values, update }) {
   );
 }
 
+/**
+ * اختيار الخط — خط واحد فقط (قرار أكتوبر ٢٠٢٦).
+ *
+ * كان يسمح بخطّين بقواعد جمع معقّدة، ومعه خطوة لتجزئة الحصص بين الخطين.
+ * أُلغى الاثنان: تركيز التعلّم على خط واحد، وتبسيط الخريطة.
+ */
 function StepScripts({ values, update, error }) {
   const { t } = useTranslation();
-  const [hint, setHint] = useState('');
   const list = visibleScriptsFor(values.track);
-  const isFoundation = values.track === 'foundation';
 
-  const toggle = (id) => {
-    if (values.scripts.includes(id)) {
-      const remaining = values.scripts.filter((s) => s !== id);
-      const nextLPS = { ...values.lessonsPerScript };
-      delete nextLPS[id];
-      update({ scripts: remaining, lessonsPerScript: nextLPS, teacher: '' });
-      setHint('');
-      return;
-    }
-    const verdict = canAddScript(values.scripts, id, values.track);
-    if (!verdict.ok) {
-      setHint(t(`register.ruleErrors.${verdict.reason}`));
-      return;
-    }
-    const nextScripts = isFoundation ? [id] : [...values.scripts, id];
-    update({ scripts: nextScripts, teacher: '' });
-    setHint('');
-  };
+  const pick = (id) => update({ scripts: [id] });
 
   return (
     <>
       <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">{t('register.steps.scripts')}</h3>
       <p className="mt-2 text-sm text-ink-600/85 dark:text-ink-300/80">
-        {isFoundation ? t('register.scriptsHintFoundation') : t('register.scriptsHint')}
+        {t('register.scriptsHintSingle')}
       </p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {list.map((s) => {
-          const selected = values.scripts.includes(s.id);
-          const verdict = canAddScript(values.scripts, s.id, values.track);
-          const disabled = !selected && !verdict.ok && s.active;
+          const selected = values.scripts[0] === s.id;
           return (
             <button
               key={s.id}
               type="button"
-              onClick={() => toggle(s.id)}
-              disabled={!s.active && !selected}
+              onClick={() => pick(s.id)}
+              disabled={!s.active}
               className={`relative flex items-center justify-between rounded-2xl border px-4 py-4 text-start transition-all ${
                 selected
                   ? 'border-flame-500 bg-flame-500/10 shadow-flame'
-                  : disabled
-                  ? 'border-ink-900/5 dark:border-ink-100/5 bg-paper/40 dark:bg-[#150B07]/40 opacity-60'
+                  : !s.active
+                  ? 'border-ink-900/5 dark:border-ink-100/5 bg-paper/40 dark:bg-[#150B07]/40 opacity-60 cursor-not-allowed'
                   : 'border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08] hover:border-flame-500/40 hover:-translate-y-0.5'
               }`}
-              title={!verdict.ok && !selected ? t(`register.ruleErrors.${verdict.reason}`) : undefined}
             >
               <span className="text-lg font-extrabold text-ink-900 dark:text-ink-100">
                 {t(`scripts.${s.id}`)}
@@ -643,99 +675,76 @@ function StepScripts({ values, update, error }) {
         })}
       </div>
 
-      {values.scripts.length > 0 && (
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <span className="rounded-full bg-flame-500 text-white px-3 py-1.5 text-xs font-extrabold shadow-flame">
-            {t('register.selected')}: {values.scripts.map((s) => t(`scripts.${s}`)).join(' + ')}
-          </span>
-        </div>
-      )}
-
-      {(hint || error) && (
+      {error && (
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-flame-500/40 bg-flame-500/10 px-4 py-2.5 text-sm text-flame-700 dark:text-flame-300">
           <AlertTriangle size={14} />
-          {hint || error}
+          {error}
         </div>
       )}
     </>
   );
 }
 
-function StepLessonsPerMonth({ values, update }) {
+/**
+ * باقات الاشتراك — عرض فقط.
+ *
+ * لا سعر هنا ولا نسبة خصم محسوبة فى المتصفح: الواجهة تعرض المدة وعدد الحصص
+ * وشارة الخصم كنص، والسيرفر هو من يحسب السعر النهائى من إعدادات الباقات.
+ */
+const PLANS = [
+  { id: 'monthly',   months: 1,  sessions: 4  },
+  { id: 'quarterly', months: 3,  sessions: 12 },
+  { id: 'biannual',  months: 6,  sessions: 24 },
+  { id: 'annual',    months: 12, sessions: 48 },
+];
+
+function StepPlan({ values, update }) {
   const { t } = useTranslation();
-  const options = ['2', '4', '8'];
+
   return (
     <>
-      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">{t('register.steps.lessonsPerMonth')}</h3>
+      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">{t('register.steps.plan')}</h3>
       <p className="mt-3 text-base leading-relaxed text-ink-700 dark:text-ink-200">
-        {t('register.lessonsPerMonth.question')}
+        {t('register.plan.question')}
       </p>
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        {options.map((opt) => {
-          const active = values.lessonsPerMonth === opt;
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {PLANS.map((p) => {
+          const active = values.plan === p.id;
+          const badge = t(`register.plan.options.${p.id}.badge`);
           return (
             <button
-              key={opt}
+              key={p.id}
               type="button"
-              onClick={() => update({ lessonsPerMonth: opt })}
-              className={`rounded-2xl border p-5 text-center transition-all hover:-translate-y-1 ${
+              onClick={() => update({ plan: p.id })}
+              className={`relative rounded-2xl border p-5 text-start transition-all hover:-translate-y-1 ${
                 active
                   ? 'border-flame-500 bg-flame-500/10 shadow-flame'
                   : 'border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08] hover:border-flame-500/40'
               }`}
             >
-              <p className="text-4xl font-black text-flame-600 dark:text-flame-400">{opt}</p>
-              <p className="mt-1 text-sm font-bold text-ink-700 dark:text-ink-200">
-                {t('register.lessonsPerMonth.unit')}
+              {badge && (
+                <span className="absolute -top-2.5 end-4 rounded-full bg-flame-500 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
+                  {badge}
+                </span>
+              )}
+              <p className="text-lg font-extrabold text-ink-900 dark:text-ink-100">
+                {t(`register.plan.options.${p.id}.title`)}
+              </p>
+              <p className="mt-1.5 text-sm text-ink-700/85 dark:text-ink-200/80">
+                {t('register.plan.duration', { months: p.months, sessions: p.sessions })}
+              </p>
+              <p className="mt-2 text-sm font-bold text-flame-600 dark:text-flame-400">
+                {t(`register.plan.options.${p.id}.value`)}
               </p>
             </button>
           );
         })}
       </div>
-    </>
-  );
-}
 
-function StepLessonsPerScript({ values, update }) {
-  const { t } = useTranslation();
-  const options = ['2', '4', '8'];
-  return (
-    <>
-      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">{t('register.steps.lessonsPerScript')}</h3>
-      <p className="mt-3 text-base leading-relaxed text-ink-700 dark:text-ink-200">
-        {t('register.lessonsPerScript.question')}
-      </p>
-      <div className="mt-5 space-y-5">
-        {values.scripts.map((scriptId) => (
-          <div key={scriptId} className="rounded-2xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08] p-5">
-            <p className="text-base font-extrabold text-ink-900 dark:text-ink-100 mb-3">
-              {t(`scripts.${scriptId}`)}
-            </p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {options.map((opt) => {
-                const active = values.lessonsPerScript[scriptId] === opt;
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => update({
-                      lessonsPerScript: { ...values.lessonsPerScript, [scriptId]: opt },
-                    })}
-                    className={`rounded-xl border px-4 py-3 text-center transition-all ${
-                      active
-                        ? 'border-flame-500 bg-flame-500 text-white shadow-flame'
-                        : 'border-ink-900/10 dark:border-ink-100/10 bg-paper/60 hover:border-flame-500/50'
-                    }`}
-                  >
-                    <span className="text-xl font-extrabold">{opt}</span>
-                    <span className="block text-xs font-bold mt-0.5">{t('register.lessonsPerMonth.unit')}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+      <InfoBanner>
+        <p>{t('register.plan.priceNote')}</p>
+      </InfoBanner>
     </>
   );
 }
@@ -794,16 +803,8 @@ function StepUploadSamples({ values, update, error }) {
         {t('register.uploadSamples.question')}
       </p>
 
-      {/* جملة موحّدة يكتبها الجميع — تجعل النماذج قابلة للمقارنة وتبنى أرشيف قبل/بعد بمرجع ثابت */}
-      <div className="mt-4 rounded-2xl border border-flame-500/40 bg-flame-500/5 px-5 py-4 text-center">
-        <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-500 dark:text-ink-300">
-          {t('register.uploadSamples.sentenceLabel')}
-        </p>
-        <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-flame-600 dark:text-flame-400 leading-snug">
-          {t('register.uploadSamples.sentence')}
-        </p>
-      </div>
-
+      {/* لا جملة مفروضة (قرار أكتوبر ٢٠٢٦): يُقبل أى نموذج سابق — تمشيق أو
+          كتابة بقلم عادى أو قصبة. الرفع يبقى إلزاميًا لأنه مادة التقييم. */}
       {values.priorExperience === 'no' && (
         <InfoBanner icon={Sprout}>
           <p>{t('register.uploadSamples.beginnerNote')}</p>
@@ -862,52 +863,6 @@ function StepUploadSamples({ values, update, error }) {
   );
 }
 
-function StepTeacher({ values, update }) {
-  const { t } = useTranslation();
-  const candidates = teachersForScripts(TEACHERS, values.scripts);
-  return (
-    <>
-      <h3 className="text-2xl font-extrabold text-ink-900 dark:text-ink-100">{t('register.steps.teacher')}</h3>
-      {candidates.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08] p-5 text-ink-700 dark:text-ink-200">
-          {t('register.fields.teacherAuto')}
-        </p>
-      ) : (
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          {candidates.map((tc) => {
-            const selected = values.teacher === tc.id;
-            const name = t(`teachers.list.${tc.id}.namePlain`);
-            return (
-              <button
-                key={tc.id}
-                type="button"
-                onClick={() => update({ teacher: tc.id })}
-                className={`flex items-center gap-4 rounded-2xl border p-3 text-start transition-all ${
-                  selected
-                    ? 'border-flame-500 bg-flame-500/10 shadow-flame'
-                    : 'border-ink-900/10 dark:border-ink-100/10 bg-paper/70 dark:bg-[#1a0e08] hover:border-flame-500/40 hover:-translate-y-0.5'
-                }`}
-              >
-                <span className="relative inline-flex h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-ink-900/10 dark:border-ink-100/10">
-                  <img src={tc.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                </span>
-                <span className="flex-1">
-                  <span className="block text-base font-extrabold text-ink-900 dark:text-ink-100">{name}</span>
-                  <span className="block text-xs text-ink-600 dark:text-ink-300">
-                    {tc.scripts.map((s) => t(`scripts.${s}`)).join(' · ')}
-                  </span>
-                </span>
-                <span className={`grid h-7 w-7 place-items-center rounded-full transition-colors ${selected ? 'bg-flame-500 text-white' : 'bg-ink-900/5 dark:bg-ink-100/10 text-ink-500'}`}>
-                  {selected && <Check size={14} />}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </>
-  );
-}
 
 /**
  * مستوى الالتزام — أربعة أبواب بالأسماء لا بالأرقام.
@@ -1080,9 +1035,6 @@ function Field({ icon: Icon, label, type = 'text', value, onChange, error, dir, 
 function StepReview({ values }) {
   const { t, i18n } = useTranslation();
   const isAr = (i18n.language || 'ar').startsWith('ar');
-  const teacherName = values.teacher
-    ? t(`teachers.list.${values.teacher}.namePlain`)
-    : t('register.fields.teacherAuto');
   const c = findCountry(values.country);
 
   const rows = [
@@ -1090,17 +1042,15 @@ function StepReview({ values }) {
     values.goal   && { label: t('register.summary.goal'),   value: t(`register.goals.${values.goal}.title`) },
     values.track  && { label: t('register.summary.track'),  value: t(`register.tracks.${values.track}.title`) },
     { label: t('register.summary.scripts'), value: values.scripts.map((s) => t(`scripts.${s}`)).join(' + ') || '—' },
-    values.lessonsPerMonth && {
-      label: t('register.summary.lessonsPerMonth'),
-      value: `${values.lessonsPerMonth} ${t('register.lessonsPerMonth.unit')}`,
+    values.plan && {
+      label: t('register.summary.plan'),
+      value: t(`register.plan.options.${values.plan}.title`),
     },
     values.priorExperience && {
       label: t('register.summary.priorExperience'),
       value: t(`register.priorExperience.${values.priorExperience}.title`),
     },
-    (values.track === 'recorded' || values.track === 'live') && {
-      label: t('register.summary.teacher'), value: teacherName,
-    },
+    // الأستاذ لا يُعرض هنا: الإدارة هى من توزّع بعد مراجعة النموذج والميزانية
     values.path && {
       label: t('register.summary.investment'),
       value: t(`register.investment.options.${values.path}.title`),
@@ -1141,15 +1091,17 @@ function Success({ values, reset }) {
   const { t } = useTranslation();
 
   const trackName = values.track ? t(`register.tracks.${values.track}.title`) : null;
-  const teacherName = values.teacher
-    ? t(`teachers.list.${values.teacher}.namePlain`)
-    : t('register.fields.teacherAuto');
   const scriptNames = values.scripts.map((s) => t(`scripts.${s}`)).join(' + ');
 
   const rows = [
     trackName   && { label: t('register.summary.track'),   value: trackName },
     scriptNames && { label: t('register.summary.scripts'), value: scriptNames },
-    { label: t('register.summary.teacher'), value: teacherName },
+    values.plan && {
+      label: t('register.summary.plan'),
+      value: t(`register.plan.options.${values.plan}.title`),
+    },
+    // الأستاذ يُحدَّد من الإدارة بعد الاطّلاع على النموذج — لا نَعِد باسم بعينه
+    { label: t('register.summary.teacher'), value: t('register.fields.teacherAuto') },
   ].filter(Boolean);
 
   return (
