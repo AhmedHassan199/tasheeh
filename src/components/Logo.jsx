@@ -2,7 +2,10 @@
 // The orange tile is part of the source image, so we just render it as-is
 // and let the cream text color follow whichever theme we're in.
 
-export function Logo({ size = 44, withWordmark = true, className = '' }) {
+// `onDark` is for surfaces that stay dark in both themes — the footer, mainly.
+// Without it the wordmark kept the light-theme ink colour and disappeared into
+// the footer's near-black background.
+export function Logo({ size = 44, withWordmark = true, onDark = false, className = '' }) {
   return (
     <div className={`flex items-center gap-3 ${className}`} dir="rtl">
       <img
@@ -15,7 +18,9 @@ export function Logo({ size = 44, withWordmark = true, className = '' }) {
       />
       {withWordmark && (
         <span
-          className="font-extrabold leading-none text-ink-800 dark:text-ink-100"
+          className={`font-extrabold leading-none ${
+            onDark ? 'text-paper' : 'text-ink-800 dark:text-ink-100'
+          }`}
           style={{ fontSize: size * 0.5 }}
         >
           أكاديمية تصحيح
